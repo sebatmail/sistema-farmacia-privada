@@ -1,0 +1,10 @@
+# Dependencias y temporales
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+*.zip
+
+# Archivos de entorno y credenciales sensibles locales
+.env
+.env.local

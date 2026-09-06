@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guía de Despliegue en cPanel - Farmacia Integral</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans p-4 sm:p-8">
+  <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+    
+    <div class="bg-slate-900 text-white p-6 sm:p-8 border-b border-slate-800">
+      <div class="flex items-center gap-3">
+        <span class="text-3xl">🚀</span>
+        <div>
+          <h1 class="text-xl sm:text-2xl font-bold">Manual de Despliegue en cPanel</h1>
+          <p class="text-xs sm:text-sm text-slate-400">Sistema Web de Gestión y Simulación de Farmacia Privada Comercial</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-6 sm:p-8 space-y-6">
+      
+      <!-- Banner Maqueta Online -->
+      <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-emerald-800">Maqueta Web Interactiva en Vivo (Demo Temporal)</span>
+          <p class="text-sm font-semibold text-emerald-950">Accede directamente al entorno de demostración temporal desplegado:</p>
+        </div>
+        <a href="https://proyecto-farmacia.momentumspace.cl/" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-lg shadow transition">Visitar Maqueta Online →</a>
+      </div>
+      
+      <!-- Paso 1 -->
+      <div class="flex gap-4">
+        <div class="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-sm shrink-0">1</div>
+        <div>
+          <h2 class="text-base font-bold text-slate-900">Crear Base de Datos MySQL en cPanel</h2>
+          <p class="text-xs text-slate-600 mt-1">Ingresa a cPanel y abre el <strong>Asistente de bases de datos MySQL</strong>. Asigna un nombre a la base de datos (ej. <code>usuario_farmacia</code>) y crea un usuario con contraseña. Otorga <strong>Todos los Privilegios</strong>.</p>
+        </div>
+      </div>
+
+      <!-- Paso 2 -->
+      <div class="flex gap-4">
+        <div class="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-sm shrink-0">2</div>
+        <div>
+          <h2 class="text-base font-bold text-slate-900">Importar <code>database.sql</code> en phpMyAdmin</h2>
+          <p class="text-xs text-slate-600 mt-1">Abre <strong>phpMyAdmin</strong> en cPanel, selecciona tu base de datos en la columna izquierda, ve a la pestaña <strong>Importar</strong>, sube el archivo <code>database.sql</code> y haz clic en <strong>Continuar</strong>.</p>
+        </div>
+      </div>
+
+      <!-- Paso 3 -->
+      <div class="flex gap-4">
+        <div class="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-sm shrink-0">3</div>
+        <div>
+          <h2 class="text-base font-bold text-slate-900">Configurar Credenciales en <code>api/config/database.php</code></h2>
+          <p class="text-xs text-slate-600 mt-1">Edita el archivo con el editor de cPanel colocando el nombre de tu base de datos, usuario y clave:</p>
+          <pre class="bg-slate-900 text-emerald-400 p-3 rounded-lg text-xs font-mono mt-2 overflow-x-auto">
+define('DB_HOST', 'localhost');
+define('DB_NAME', 'tu_base_de_datos');
+define('DB_USER', 'tu_usuario_mysql');
+define('DB_PASS', 'tu_clave_segura');</pre>
+        </div>
+      </div>
+
+      <!-- Paso 4 -->
+      <div class="flex gap-4">
+        <div class="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-sm shrink-0">4</div>
+        <div>
+          <h2 class="text-base font-bold text-slate-900">Subir y Descomprimir <code>farmacia_cpanel.zip</code></h2>
+          <p class="text-xs text-slate-600 mt-1">En el Administrador de Archivos de cPanel, entra a <code>public_html/</code>, sube el archivo ZIP y presiona <strong>Extraer</strong>.</p>
+        </div>
+      </div>
+
+      <div class="mt-8 pt-6 border-t border-slate-200 bg-slate-50 -mx-6 -mb-6 sm:-mx-8 sm:-mb-8 p-6 sm:p-8 flex justify-between items-center">
+        <div>
+          <div class="text-xs font-bold text-slate-700">Contraseña oficial de prueba:</div>
+          <div class="text-xs font-mono text-emerald-700 font-bold">inacap2026</div>
+        </div>
+        <a href="index.html" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md transition-all">
+          Abrir Sistema Ahora ➔
+        </a>
+      </div>
+
+    </div>
+    <div class="text-center text-slate-400 text-[11px] py-4">
+      INACAP • Área Tecnologías de la Información y Ciberseguridad • Docente Evaluador: <strong>Juan José Mir Castillo</strong> • Desarrollado por Vicente Flores & Sebastián Torres
+    </div>
+  </div>
+</body>
+</html>

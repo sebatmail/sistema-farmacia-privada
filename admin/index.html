@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Consola de Administración Gerencial | FarmaRed Chile</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../assets/css/custom.css">
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex flex-col selection:bg-emerald-100 selection:text-emerald-900">
+
+  <!-- ============================================================== -->
+  <!-- MODAL / BARRERA DE SEGURIDAD (LOGIN GERENCIAL) -->
+  <!-- ============================================================== -->
+  <div id="admin-login-overlay" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-200">
+      
+      <div class="text-center space-y-2 mb-6">
+        <div class="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-tr from-slate-900 to-indigo-900 flex items-center justify-center text-white shadow-md text-2xl">
+          🔒
+        </div>
+        <h2 class="text-xl font-black tracking-tight text-slate-900">Consola de Administración</h2>
+        <p class="text-xs text-slate-500">Acceso restringido para el Administrador de Local y Docente Evaluador (Juan José Mir Castillo).</p>
+      </div>
+
+      <div class="space-y-4 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Correo Institucional:</label>
+          <input id="login-email" type="email" value="admin@farmacia.cl" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl font-medium outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50">
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Contraseña Oficial:</label>
+          <input id="login-password" type="password" value="inacap2026" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl font-mono font-bold outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50">
+          <p class="text-[10px] text-slate-400 mt-1">Clave oficial del proyecto: <strong class="text-emerald-700">inacap2026</strong></p>
+        </div>
+
+        <div id="login-error" class="hidden p-2.5 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl font-semibold text-[11px] text-center">
+          Credenciales incorrectas. Verifique la contraseña.
+        </div>
+
+        <button onclick="autenticarAdmin()" class="w-full py-3 bg-gradient-to-r from-slate-900 to-indigo-950 hover:from-slate-800 hover:to-indigo-900 text-white font-extrabold rounded-xl shadow-md transition-all text-sm flex items-center justify-center gap-2">
+          Desbloquear Consola Gerencial
+        </button>
+
+        <div class="pt-3 border-t border-slate-200 text-center">
+          <a href="../index.html" class="text-slate-500 hover:text-slate-800 font-semibold text-[11px]">
+            ← Volver a Sala de Ventas (Punto de Venta)
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- BARRA SUPERIOR DE LA CONSOLA ADMINISTRATIVA -->
+  <!-- ============================================================== -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap justify-between items-center gap-4">
+      
+      <div class="flex items-center space-x-3.5">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-700 to-slate-900 flex items-center justify-center text-white shadow-sm font-bold text-lg ring-2 ring-indigo-100">
+          🛡️
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-base sm:text-lg font-black tracking-tight text-slate-900">FarmaRed</span>
+            <span class="text-xs font-semibold text-slate-400">|</span>
+            <span class="text-xs font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-200">Panel de Administración Avanzado</span>
+          </div>
+          <p class="text-xs text-slate-500">Gestión de Catálogo, Precios CENABAST, Lotes FEFO y Cuentas de Personal</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 text-xs">
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full font-medium bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span class="font-semibold">Servidor MySQL Conectado</span>
+        </div>
+
+        <a href="../index.html?tab=pos" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-xs transition-all flex items-center gap-1.5">
+          🛒 Sala de Ventas (POS)
+        </a>
+
+        <button onclick="cerrarSesionAdmin()" class="px-3 py-1.5 border border-slate-300 hover:bg-rose-50 hover:text-rose-700 text-slate-600 font-bold rounded-lg transition-all">
+          Cerrar Sesión 🔒
+        </button>
+      </div>
+
+    </div>
+
+    <!-- PESTAÑAS ADMINISTRATIVAS -->
+    <div class="bg-slate-50 border-t border-slate-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex space-x-2 sm:space-x-4 overflow-x-auto text-xs sm:text-sm">
+        <button onclick="cambiarSeccionAdmin('dashboard')" id="nav-btn-dashboard" class="py-3 px-3 font-bold text-indigo-700 border-b-2 border-indigo-600 flex items-center gap-1.5 whitespace-nowrap">
+          📊 Resumen Gerencial
+        </button>
+        <button onclick="cambiarSeccionAdmin('medicamentos')" id="nav-btn-medicamentos" class="py-3 px-3 font-medium text-slate-600 hover:text-slate-900 border-b-2 border-transparent flex items-center gap-1.5 whitespace-nowrap">
+          💊 Catálogo & Precios (CRUD)
+        </button>
+        <button onclick="cambiarSeccionAdmin('lotes')" id="nav-btn-lotes" class="py-3 px-3 font-medium text-slate-600 hover:text-slate-900 border-b-2 border-transparent flex items-center gap-1.5 whitespace-nowrap">
+          📦 Ingreso de Lotes (FEFO)
+        </button>
+        <button onclick="cambiarSeccionAdmin('movimientos')" id="nav-btn-movimientos" class="py-3 px-3 font-medium text-slate-600 hover:text-slate-900 border-b-2 border-transparent flex items-center gap-1.5 whitespace-nowrap">
+          📜 Kardex & Auditoría Ventas
+        </button>
+        <button onclick="cambiarSeccionAdmin('usuarios')" id="nav-btn-usuarios" class="py-3 px-3 font-medium text-slate-600 hover:text-slate-900 border-b-2 border-transparent flex items-center gap-1.5 whitespace-nowrap">
+          👥 Personal & Roles (RBAC)
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================================================== -->
+  <!-- CONTENEDOR PRINCIPAL DE MÓDULOS -->
+  <!-- ============================================================== -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
+
+    <!-- ============================================================== -->
+    <!-- SECCIÓN 1: RESUMEN GERENCIAL & KPIS -->
+    <!-- ============================================================== -->
+    <section id="sec-dashboard" class="space-y-6">
+      <div class="bg-gradient-to-r from-slate-900 to-indigo-950 text-white p-6 rounded-3xl shadow-sm border border-slate-800 flex flex-wrap justify-between items-center gap-4">
+        <div>
+          <span class="text-xs text-emerald-400 font-bold uppercase tracking-wider">● Sesión Autenticada</span>
+          <h2 class="text-2xl font-black mt-1">Consola de Control Central</h2>
+          <p class="text-xs text-slate-300 mt-1">Supervisión operativa de farmacia, arqueo de caja y fiscalización regulatoria (ISP & SII).</p>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="exportarReporteSII()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-xl border border-slate-700 flex items-center gap-1.5">
+            📄 Libro SII (PDF)
+          </button>
+          <button onclick="exportarReporteISP()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs flex items-center gap-1.5">
+            📊 Balance ISP (Excel)
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Ventas Acumuladas</span>
+          <p id="kpi-ventas" class="text-2xl font-black text-slate-900 mt-1">$3.850.000</p>
+          <span class="text-[11px] text-emerald-600 font-semibold">↑ 14% vs día anterior</span>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Boletas DTE Emitidas</span>
+          <p id="kpi-boletas" class="text-2xl font-black text-emerald-700 mt-1">142 ventas</p>
+          <span class="text-[11px] text-slate-500">Timbradas con TED oficial</span>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Ahorro Ley CENABAST</span>
+          <p id="kpi-cenabast" class="text-2xl font-black text-sky-700 mt-1">$684.200</p>
+          <span class="text-[11px] text-sky-600 font-semibold">Precios máximos respetados</span>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Lotes Críticos FEFO</span>
+          <p id="kpi-fefo" class="text-2xl font-black text-amber-600 mt-1">18 lotes</p>
+          <span class="text-[11px] text-amber-700 font-semibold">Próximos a vencer &lt;60 días</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- SECCIÓN 2: GESTIÓN DE MEDICAMENTOS (CRUD COMPLETO) -->
+    <!-- ============================================================== -->
+    <section id="sec-medicamentos" class="hidden space-y-4">
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-wrap justify-between items-center gap-3">
+        <div>
+          <h2 class="text-base font-extrabold text-slate-900">Catálogo Maestro de Medicamentos & Fijación de Precios</h2>
+          <p class="text-xs text-slate-500">Alta, modificación de precios, topes CENABAST y eliminación de fármacos.</p>
+        </div>
+        <button onclick="abrirModalNuevoMedicamento()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-extrabold flex items-center gap-1.5 shadow-xs transition-all">
+          <span>+</span> Registrar Nuevo Medicamento
+        </button>
+      </div>
+
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="bg-slate-50 text-slate-700 border-b border-slate-200 font-bold">
+                <th class="py-3 px-4">Código ISP</th>
+                <th class="py-3 px-4">Nombre Comercial & Laboratorio</th>
+                <th class="py-3 px-4">Principio Activo</th>
+                <th class="py-3 px-4">Condición de Venta</th>
+                <th class="py-3 px-4 text-right">Precio Comercial</th>
+                <th class="py-3 px-4 text-center">Ley CENABAST</th>
+                <th class="py-3 px-4 text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="crud-medicamentos-body" class="divide-y divide-slate-100">
+              <!-- Se puebla dinámicamente -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- SECCIÓN 3: RECEPCIÓN DE LOTES & CONTROL FEFO -->
+    <!-- ============================================================== -->
+    <section id="sec-lotes" class="hidden space-y-4">
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+        <div class="flex justify-between items-center">
+          <div>
+            <h2 class="text-base font-extrabold text-slate-900">Ingreso de Nuevos Lotes de Mercadería (Recepción FEFO)</h2>
+            <p class="text-xs text-slate-500">Registrar llegada de insumos desde laboratorios hacia Bodega Central y Vitrina.</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-3.5 text-xs">
+          <div class="sm:col-span-4">
+            <label class="block font-bold text-slate-700 mb-1">Medicamento a Ingresar:</label>
+            <select id="lote-producto-select" class="w-full p-2.5 border border-slate-300 rounded-xl bg-white font-medium outline-none">
+              <!-- Se puebla dinámicamente -->
+            </select>
+          </div>
+
+          <div class="sm:col-span-3">
+            <label class="block font-bold text-slate-700 mb-1">Número de Lote (Fabricante):</label>
+            <input id="lote-numero" type="text" placeholder="ej. LT-AND-2027-B" class="w-full p-2.5 border border-slate-300 rounded-xl font-mono font-bold outline-none">
+          </div>
+
+          <div class="sm:col-span-3">
+            <label class="block font-bold text-slate-700 mb-1">Fecha de Caducidad (FEFO):</label>
+            <input id="lote-vencimiento" type="date" value="2027-10-15" class="w-full p-2.5 border border-slate-300 rounded-xl font-medium outline-none">
+          </div>
+
+          <div class="sm:col-span-2">
+            <label class="block font-bold text-slate-700 mb-1">Cantidad Bodega:</label>
+            <input id="lote-cant-bodega" type="number" min="1" value="50" class="w-full p-2.5 border border-slate-300 rounded-xl font-mono font-bold outline-none">
+          </div>
+
+          <div class="sm:col-span-12 flex justify-end">
+            <button onclick="guardarNuevoLote()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl shadow-xs text-xs flex items-center gap-1.5">
+              <span>✓</span> Registrar Ingreso a Bodega
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- SECCIÓN 4: AUDITORÍA DE MOVIMIENTOS & KARDEX DE VENTAS -->
+    <!-- ============================================================== -->
+    <section id="sec-movimientos" class="hidden space-y-4">
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex justify-between items-center">
+        <div>
+          <h2 class="text-base font-extrabold text-slate-900">Kardex de Transacciones & Auditoría de Ventas DTE</h2>
+          <p class="text-xs text-slate-500">Historial no repudiable de ventas emitidas, cajero responsable y timbres TED del SII.</p>
+        </div>
+        <span class="px-3 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full font-bold text-xs">
+          Auditoría Inmutable
+        </span>
+      </div>
+
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="bg-slate-50 text-slate-700 border-b border-slate-200 font-bold">
+                <th class="py-3 px-4">Folio DTE</th>
+                <th class="py-3 px-4">Fecha y Hora</th>
+                <th class="py-3 px-4">Cajero</th>
+                <th class="py-3 px-4">Cliente & RUT</th>
+                <th class="py-3 px-4">Previsión</th>
+                <th class="py-3 px-4 text-right">Monto Bruto</th>
+                <th class="py-3 px-4 text-right">Copago Total</th>
+                <th class="py-3 px-4 text-center">Timbre TED SII</th>
+              </tr>
+            </thead>
+            <tbody id="movimientos-body" class="divide-y divide-slate-100">
+              <!-- Se puebla dinámicamente -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- SECCIÓN 5: GESTIÓN DE PERSONAL & ROLES (RBAC) -->
+    <!-- ============================================================== -->
+    <section id="sec-usuarios" class="hidden space-y-4">
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex justify-between items-center flex-wrap gap-2">
+        <div>
+          <h2 class="text-base font-extrabold text-slate-900">Personal Registrado & Control de Accesos (RBAC)</h2>
+          <p class="text-xs text-slate-500">Cuentas habilitadas con contraseñas seguras e inhabilitación inmediata.</p>
+        </div>
+        <button onclick="abrirModalNuevoUsuario()" class="px-4 py-2.5 bg-indigo-700 hover:bg-indigo-800 text-white rounded-xl text-xs font-extrabold flex items-center gap-1.5 shadow-xs transition-all">
+          <span>+</span> Agregar Nuevo Trabajador
+        </button>
+      </div>
+
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="bg-slate-50 text-slate-700 border-b border-slate-200 font-bold">
+                <th class="py-3 px-4">RUT</th>
+                <th class="py-3 px-4">Nombre Completo</th>
+                <th class="py-3 px-4">Correo Electrónico</th>
+                <th class="py-3 px-4">Rol Asignado</th>
+                <th class="py-3 px-4 text-center">Contraseña Oficial</th>
+                <th class="py-3 px-4 text-center">Estado</th>
+                <th class="py-3 px-4 text-center">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="usuarios-body" class="divide-y divide-slate-100">
+              <!-- Se puebla dinámicamente -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: REGISTRAR / EDITAR MEDICAMENTO -->
+  <!-- ============================================================== -->
+  <div id="modal-medicamento" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+      <div class="flex justify-between items-center mb-4">
+        <h3 id="modal-med-titulo" class="text-base font-black text-slate-900">Registrar Nuevo Medicamento</h3>
+        <button onclick="cerrarModalMedicamento()" class="text-slate-400 hover:text-slate-700 font-bold text-lg">&times;</button>
+      </div>
+
+      <input type="hidden" id="med-id" value="0">
+      <div class="space-y-3 text-xs">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Nombre Comercial:</label>
+            <input id="med-nombre" type="text" placeholder="ej. Kitadol Forte 500mg" class="w-full p-2 border border-slate-300 rounded-xl outline-none">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Principio Activo:</label>
+            <input id="med-principio" type="text" placeholder="ej. Paracetamol" class="w-full p-2 border border-slate-300 rounded-xl outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Laboratorio:</label>
+            <input id="med-lab" type="text" placeholder="ej. Laboratorio Chile" class="w-full p-2 border border-slate-300 rounded-xl outline-none">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Código ISP:</label>
+            <input id="med-isp" type="text" placeholder="ej. F-22104" class="w-full p-2 border border-slate-300 rounded-xl font-mono outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Código Barra EAN-13:</label>
+            <input id="med-barra" type="text" placeholder="780000001099" class="w-full p-2 border border-slate-300 rounded-xl font-mono outline-none">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Precio de Venta ($):</label>
+            <input id="med-precio" type="number" placeholder="2500" class="w-full p-2 border border-slate-300 rounded-xl font-mono font-bold outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Condición de Venta Sanitaria:</label>
+          <select id="med-condicion" class="w-full p-2 border border-slate-300 rounded-xl outline-none bg-white">
+            <option value="VENTA_DIRECTA">Venta Directa (Sin Receta)</option>
+            <option value="RECETA_SIMPLE">Receta Médica Simple</option>
+            <option value="RECETA_RETENIDA">⚠️ Receta Retenida (Controlado ISP)</option>
+          </select>
+        </div>
+
+        <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl space-y-2">
+          <label class="flex items-center gap-2 cursor-pointer font-bold text-emerald-900">
+            <input id="med-es-cenabast" type="checkbox" onchange="toggleCenabastInput(this.checked)" class="rounded text-emerald-600">
+            <span>¿Sujeto a Regulación de Precios Ley CENABAST N° 21.198?</span>
+          </label>
+          <div id="box-cenabast-max" class="hidden">
+            <label class="block font-bold text-emerald-800 mb-1">Precio Máximo Fijado por CENABAST ($):</label>
+            <input id="med-cenabast-max" type="number" placeholder="1800" class="w-full p-2 border border-emerald-300 rounded-lg font-mono font-bold bg-white">
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-5 flex justify-end gap-2 text-xs">
+        <button onclick="cerrarModalMedicamento()" class="px-4 py-2 border border-slate-300 rounded-xl font-bold text-slate-600 hover:bg-slate-50">Cancelar</button>
+        <button onclick="guardarMedicamento()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl shadow-xs">Guardar Medicamento</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: REGISTRAR NUEVO TRABAJADOR -->
+  <!-- ============================================================== -->
+  <div id="modal-usuario" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-base font-black text-slate-900">Registrar Nuevo Trabajador</h3>
+        <button onclick="cerrarModalUsuario()" class="text-slate-400 hover:text-slate-700 font-bold text-lg">&times;</button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">RUT del Empleado:</label>
+          <input id="usr-rut" type="text" placeholder="12.345.678-9" class="w-full p-2 border border-slate-300 rounded-xl font-mono outline-none">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Nombre Completo:</label>
+          <input id="usr-nombre" type="text" placeholder="Ej. Camila Morales Soto" class="w-full p-2 border border-slate-300 rounded-xl outline-none">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Correo Institucional:</label>
+          <input id="usr-email" type="email" placeholder="cmorales@farmacia.cl" class="w-full p-2 border border-slate-300 rounded-xl outline-none">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Rol / Perfil Asignado:</label>
+          <select id="usr-rol" class="w-full p-2 border border-slate-300 rounded-xl outline-none bg-white font-medium">
+            <option value="VENDEDOR">Vendedor / Cajero</option>
+            <option value="QUIMICO_FARMACEUTICO">Químico Farmacéutico (DT)</option>
+            <option value="BODEGUERO">Operador de Bodega</option>
+            <option value="ADMIN">Administrador General</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Contraseña:</label>
+          <input id="usr-pass" type="text" value="inacap2026" class="w-full p-2 border border-slate-300 rounded-xl font-mono font-bold outline-none">
+        </div>
+      </div>
+
+      <div class="mt-5 flex justify-end gap-2 text-xs">
+        <button onclick="cerrarModalUsuario()" class="px-4 py-2 border border-slate-300 rounded-xl font-bold text-slate-600 hover:bg-slate-50">Cancelar</button>
+        <button onclick="guardarNuevoUsuario()" class="px-5 py-2 bg-indigo-700 hover:bg-indigo-800 text-white font-extrabold rounded-xl shadow-xs">Crear Cuenta</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div id="toast-admin" class="fixed bottom-4 right-4 z-50 space-y-2 pointer-events-none"></div>
+
+  <!-- PIE DE PÁGINA ACADÉMICO -->
+  <footer class="bg-white border-t border-slate-200 text-slate-500 text-xs py-5 mt-auto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap justify-between items-center gap-3">
+      <div class="flex items-center space-x-2">
+        <span class="font-black text-slate-800 tracking-wider">INACAP</span>
+        <span class="text-slate-300">|</span>
+        <span class="font-semibold text-slate-700">Área Tecnologías de la Información y Ciberseguridad</span>
+      </div>
+      <div class="text-center sm:text-right text-[11px] space-y-0.5">
+        <p class="font-medium text-slate-700">
+          Proyecto Integrado (AP-N4-C1) • <span class="font-bold text-slate-900">Docente Evaluador: Juan José Mir Castillo</span>
+        </p>
+        <p class="text-slate-500">
+          Desarrollado por: <strong class="text-slate-800">Vicente Flores</strong> & <strong class="text-slate-800">Sebastián Torres</strong>
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- SCRIPT DE CONTROL ADMINISTRATIVO -->
+  <script src="admin_app.js"></script>
+</body>
+</html>

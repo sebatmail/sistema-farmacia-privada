@@ -398,7 +398,20 @@ async function cargarTurnosDesdeBD() {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const json = await res.json();
     if (json.success && Array.isArray(json.data) && json.data.length > 0) {
-      ADMIN_STATE.turnos = json.data;
+      ADMIN_STATE.turnos = json.data.map(t => {
+        const fIni = (t.fecha_inicio || '').replace(' ', 'T');
+        const fFin = (t.fecha_fin || '').replace(' ', 'T');
+        const hIni = fIni.length >= 16 ? fIni.substring(11, 16) : '08:30';
+        const hFin = fFin.length >= 16 ? fFin.substring(11, 16) : '16:30';
+        const dTexto = fIni.length >= 10 ? fIni.substring(0, 10) : 'Hoy';
+        return {
+          ...t,
+          fecha_inicio: fIni,
+          fecha_fin: fFin,
+          horario_texto: t.horario_texto || `${hIni} - ${hFin} hrs`,
+          dia_texto: t.dia_texto || dTexto
+        };
+      });
       sincronizarStorageTurnos();
     }
   } catch (e) {
@@ -476,11 +489,11 @@ function abrirGoogleCalendar(turnoId) {
   const turno = ADMIN_STATE.turnos.find(t => t.id === turnoId);
   if (!turno) return;
 
-  const startIso = (turno.fecha_inicio || '2026-11-24T08:30:00').replace(/[-:]/g, '');
-  const endIso = (turno.fecha_fin || '2026-11-24T16:30:00').replace(/[-:]/g, '');
+  const startIso = (turno.fecha_inicio || '2026-11-24T08:30:00').replace(' ', 'T').replace(/[-:]/g, '');
+  const endIso = (turno.fecha_fin || '2026-11-24T16:30:00').replace(' ', 'T').replace(/[-:]/g, '');
 
-  const tituloEnc = encodeURIComponent(turno.titulo + ' (' + turno.trabajador_nombre + ')');
-  const descEnc = encodeURIComponent(`Turno Oficial de Farmacia FarmaRed Chile\nTrabajador: ${turno.trabajador_nombre} (${turno.trabajador_rol})\nDetalles: ${turno.descripcion}\nUbicación: ${turno.ubicacion}`);
+  const tituloEnc = encodeURIComponent(turno.titulo + ' (' + (turno.trabajador_nombre || turno.trabajador || '') + ')');
+  const descEnc = encodeURIComponent(`Turno Oficial de Farmacia FarmaRed Chile\nTrabajador: ${turno.trabajador_nombre || turno.trabajador || ''} (${turno.trabajador_rol || turno.rol || ''})\nDetalles: ${turno.descripcion}\nUbicación: ${turno.ubicacion}`);
   const locEnc = encodeURIComponent(turno.ubicacion || 'FarmaRed Santiago Centro - Alameda #1020');
 
   const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${tituloEnc}&dates=${startIso}/${endIso}&details=${descEnc}&location=${locEnc}&sf=true&output=xml`;
@@ -492,8 +505,8 @@ function descargarAppleCalendarIcs(turnoId) {
   const turno = ADMIN_STATE.turnos.find(t => t.id === turnoId);
   if (!turno) return;
 
-  const dtStart = (turno.fecha_inicio || '2026-11-24T08:30:00').replace(/[-:]/g, '');
-  const dtEnd = (turno.fecha_fin || '2026-11-24T16:30:00').replace(/[-:]/g, '');
+  const dtStart = (turno.fecha_inicio || '2026-11-24T08:30:00').replace(' ', 'T').replace(/[-:]/g, '');
+  const dtEnd = (turno.fecha_fin || '2026-11-24T16:30:00').replace(' ', 'T').replace(/[-:]/g, '');
 
   const icsContent = 
 `BEGIN:VCALENDAR

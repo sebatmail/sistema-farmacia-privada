@@ -286,6 +286,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderCarrito();
   renderInventario();
   renderControlados();
+  renderTurnosPOS();
+  cargarTurnosDesdeBDPOS();
   actualizarReloj();
   setInterval(actualizarReloj, 1000);
 
@@ -1143,21 +1145,57 @@ let TURNOS_TRABAJADORES = [
 
 let FILTRO_OPERADOR_ACTIVO = 'TODOS';
 
+async function cargarTurnosDesdeBDPOS() {
+  try {
+    const res = await fetch('api/schedules/list.php');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+      TURNOS_TRABAJADORES = json.data.map(item => {
+        const fIni = (item.fecha_inicio || '').replace(' ', 'T');
+        const fFin = (item.fecha_fin || '').replace(' ', 'T');
+        const hIni = fIni.length >= 16 ? fIni.substring(11, 16) : '08:30';
+        const hFin = fFin.length >= 16 ? fFin.substring(11, 16) : '16:30';
+        const dTexto = fIni.length >= 10 ? fIni.substring(0, 10) : 'Hoy';
+        return {
+          id: item.id,
+          trabajador: item.trabajador_nombre || item.trabajador || 'Personal FarmaRed',
+          rol: item.trabajador_rol || item.rol || 'OPERADOR',
+          titulo: item.titulo,
+          fecha: item.dia_texto || dTexto,
+          hora_inicio: hIni,
+          hora_fin: hFin,
+          iso_inicio: fIni.replace(/[-:]/g, ''),
+          iso_fin: fFin.replace(/[-:]/g, ''),
+          ubicacion: item.ubicacion || 'FarmaRed Santiago Centro',
+          descripcion: item.descripcion || 'Turno operativo de farmacia',
+          estado: item.estado_asistencia || 'PROGRAMADO',
+          marcado_entrada: item.hora_marcacion_entrada
+        };
+      });
+    }
+  } catch (e) {
+    console.info('Operando con turnos locales preconfigurados en POS.');
+  } finally {
+    renderTurnosPOS();
+  }
+}
+
 function renderTurnosPOS() {
-  const cont = document.getElementById('contenedor-turnos-pos');
+  const cont = document.getElementById('contenedor-turnos-pos') || document.getElementById('turnos-pos-cards-container');
   if (!cont) return;
   cont.innerHTML = '';
 
   const lista = FILTRO_OPERADOR_ACTIVO === 'TODOS' 
     ? TURNOS_TRABAJADORES 
-    : TURNOS_TRABAJADORES.filter(t => t.trabajador.includes(FILTRO_OPERADOR_ACTIVO));
+    : TURNOS_TRABAJADORES.filter(t => (t.trabajador || '').includes(FILTRO_OPERADOR_ACTIVO));
 
   lista.forEach(t => {
     const card = document.createElement('div');
     card.className = 'bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between hover:shadow-md transition-all';
     
     let badgeColor = 'bg-indigo-50 text-indigo-700 border-indigo-200';
-    if (t.rol === 'QUIMICO_FARMACEUTICO') badgeColor = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+    if (t.rol === 'QUIMICO_FARMACEUTICO' || t.rol === 'QUIMICO_REGENTE') badgeColor = 'bg-emerald-50 text-emerald-700 border-emerald-200';
     if (t.rol === 'BODEGUERO') badgeColor = 'bg-amber-50 text-amber-700 border-amber-200';
 
     card.innerHTML = `
@@ -1412,208 +1450,15 @@ function mostrarToast(mensaje, tipo = 'info') {
 }
 
 
-// -------------------------------------------------------------
-// TURNOS Y CALENDARIOS EN PUNTO DE VENTA (GOOGLE Y APPLE CALENDAR)
-// -------------------------------------------------------------
-function getTurnosPOS() {
-  try {
-    const tStr = localStorage.getItem(STORAGE_KEYS_POS.TURNOS);
-    if (tStr) return JSON.parse(tStr);
-  } catch (e) {}
-
-  return [
-    {
-      id: 1,
-      usuario_id: 3,
-      trabajador_nombre: 'Vicente Flores',
-      trabajador_rol: 'VENDEDOR',
-      titulo: 'Turno Mañana - Dispensación & POS',
-      horario_texto: '08:30 - 16:30 hrs',
-      dia_texto: 'Martes 24 Nov',
-      fecha_inicio: '2026-11-24T08:30:00',
-      fecha_fin: '2026-11-24T16:30:00',
-      ubicacion: 'FarmaRed Santiago Centro - Caja 2',
-      descripcion: 'Atención ambulatoria y dispensación con recaudación de copagos.',
-      estado_asistencia: 'PRESENTE',
-      hora_marcacion_entrada: '08:28 hrs'
-    },
-    {
-      id: 2,
-      usuario_id: 2,
-      trabajador_nombre: 'Sebastián Torres',
-      trabajador_rol: 'QUIMICO_FARMACEUTICO',
-      titulo: 'Regencia Farmacéutica & Controlados ISP',
-      horario_texto: '09:00 - 18:00 hrs',
-      dia_texto: 'Martes 24 Nov',
-      fecha_inicio: '2026-11-24T09:00:00',
-      fecha_fin: '2026-11-24T18:00:00',
-      ubicacion: 'FarmaRed Santiago Centro - Despacho Controlados',
-      descripcion: 'Custodia Libro ISP y validación de recetas retenidas.',
-      estado_asistencia: 'PRESENTE',
-      hora_marcacion_entrada: '08:55 hrs'
-    },
-    {
-      id: 3,
-      usuario_id: 4,
-      trabajador_nombre: 'Operador de Bodega',
-      trabajador_rol: 'BODEGUERO',
-      titulo: 'Recepción Central & Clasificación FEFO',
-      horario_texto: '08:00 - 16:00 hrs',
-      dia_texto: 'Martes 24 Nov',
-      fecha_inicio: '2026-11-24T08:00:00',
-      fecha_fin: '2026-11-24T16:00:00',
-      ubicacion: 'FarmaRed Santiago Centro - Bodega Central',
-      descripcion: 'Recepción de órdenes de compra y reposición de mostrador.',
-      estado_asistencia: 'PRESENTE',
-      hora_marcacion_entrada: '07:58 hrs'
-    }
-  ];
-}
-
-function renderTurnosPOS() {
-  const container = document.getElementById('turnos-pos-cards-container');
-  if (!container) return;
-  container.innerHTML = '';
-
-  const turnos = getTurnosPOS();
-
-  turnos.forEach(t => {
-    const card = document.createElement('div');
-    card.className = 'glass-card p-5 rounded-2xl flex flex-col justify-between space-y-4 border border-slate-200 hover:border-emerald-300';
-
-    let badgeEstado = '';
-    if (t.estado_asistencia === 'PRESENTE') {
-      badgeEstado = '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 inline-flex items-center gap-1">🟢 Presente (' + (t.hora_marcacion_entrada || 'Marcado') + ')</span>';
-    } else if (t.estado_asistencia === 'SALIDA_REGISTRADA') {
-      badgeEstado = '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-300 inline-flex items-center gap-1">🚪 Turno Cumplido</span>';
-    } else {
-      badgeEstado = '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 inline-flex items-center gap-1">📅 Programado</span>';
-    }
-
-    card.innerHTML = `
-      <div class="space-y-2">
-        <div class="flex justify-between items-start gap-2">
-          <div>
-            <span class="text-[11px] font-bold text-emerald-700 block">${t.dia_texto || 'Hoy'}</span>
-            <h4 class="text-sm font-extrabold text-slate-900">${t.titulo}</h4>
-          </div>
-          <div>${badgeEstado}</div>
-        </div>
-
-        <div class="space-y-1 text-xs text-slate-600">
-          <div><strong class="text-slate-800">Trabajador:</strong> ${t.trabajador_nombre} <span class="text-[10px] font-mono text-slate-400 font-bold">(${t.trabajador_rol})</span></div>
-          <div class="font-mono text-slate-700 font-semibold">⏰ ${t.horario_texto || '08:30 - 16:30 hrs'}</div>
-          <div class="text-slate-500 text-[11px]">📍 ${t.ubicacion || 'FarmaRed Santiago Centro'}</div>
-          <p class="text-[11px] text-slate-500 pt-1 border-t border-slate-100">${t.descripcion || 'Turno operativo farmacia'}</p>
-        </div>
-      </div>
-
-      <div class="pt-3 border-t border-slate-100 flex flex-wrap gap-2">
-        <button onclick="abrirGoogleCalendarPOS(${t.id})" class="btn-calendar-google flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer">
-          <svg class="w-4 h-4" viewBox="0 0 24 24">
-            <path fill="#4285F4" d="M19.5 3h-15A1.5 1.5 0 0 0 3 4.5v15A1.5 1.5 0 0 0 4.5 21h15a1.5 1.5 0 0 0 1.5-1.5v-15A1.5 1.5 0 0 0 19.5 3z"/>
-            <path fill="#fff" d="M16 11h-3V8h-2v3H8v2h3v3h2v-3h3z"/>
-          </svg>
-          Google Calendar
-        </button>
-        <button onclick="descargarAppleCalendarIcsPOS(${t.id})" class="btn-calendar-apple flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer">
-          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.85c.64-.78 1.08-1.86.96-2.95-1 .04-2.14.67-2.8 1.45-.58.68-1.1 1.77-.96 2.83 1.12.09 2.16-.55 2.8-1.33z"/>
-          </svg>
-          Apple Calendar (.ics)
-        </button>
-      </div>
-    `;
-
-    container.appendChild(card);
-  });
-}
-
-function abrirGoogleCalendarPOS(turnoId) {
-  const turnos = getTurnosPOS();
-  const turno = turnos.find(t => t.id === turnoId);
-  if (!turno) return;
-
-  const startIso = (turno.fecha_inicio || '2026-11-24T08:30:00').replace(/[-:]/g, '');
-  const endIso = (turno.fecha_fin || '2026-11-24T16:30:00').replace(/[-:]/g, '');
-
-  const tituloEnc = encodeURIComponent(turno.titulo + ' (' + turno.trabajador_nombre + ')');
-  const descEnc = encodeURIComponent(`Turno FarmaRed Chile\nTrabajador: ${turno.trabajador_nombre}\nRol: ${turno.trabajador_rol}\n${turno.descripcion}`);
-  const locEnc = encodeURIComponent(turno.ubicacion || 'FarmaRed Santiago Centro - Alameda #1020');
-
-  const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${tituloEnc}&dates=${startIso}/${endIso}&details=${descEnc}&location=${locEnc}&sf=true&output=xml`;
-  window.open(url, '_blank');
-  mostrarToast('📅 Abriendo Google Calendar para programar tu turno...', 'info');
-}
-
-function descargarAppleCalendarIcsPOS(turnoId) {
-  const turnos = getTurnosPOS();
-  const turno = turnos.find(t => t.id === turnoId);
-  if (!turno) return;
-
-  const dtStart = (turno.fecha_inicio || '2026-11-24T08:30:00').replace(/[-:]/g, '');
-  const dtEnd = (turno.fecha_fin || '2026-11-24T16:30:00').replace(/[-:]/g, '');
-
-  const icsContent = 
-`BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//FarmaRed Chile//Turnos Farmaceuticos//ES
-CALSCALE:GREGORIAN
-METHOD:PUBLISH
-BEGIN:VEVENT
-UID:turno-${turno.id}-pos@sitiohost.host
-DTSTAMP:${dtStart}Z
-DTSTART:${dtStart}
-DTEND:${dtEnd}
-SUMMARY:${turno.titulo} - ${turno.trabajador_nombre}
-DESCRIPTION:Turno FarmaRed Chile\nTrabajador: ${turno.trabajador_nombre}\nRol: ${turno.trabajador_rol}\n${turno.descripcion}
-LOCATION:${turno.ubicacion}
-STATUS:CONFIRMED
-END:VEVENT
-END:VCALENDAR`;
-
-  const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.setAttribute("href", url);
-  link.setAttribute("download", `turno_${turno.trabajador_nombre.replace(/\s+/g, '_')}.ics`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-
-  mostrarToast(`🍏 Archivo .ics descargado para Apple Calendar & iPhone.`, 'success');
-}
-
-function descargarTodosLosTurnosIcsPOS() {
-  window.open('api/schedules/ical.php', '_blank');
-  mostrarToast('🍏 Exportando todos los turnos para Apple Calendar...', 'info');
-}
-
-function marcarAsistenciaRelojControlPOS(tipo) {
-  const ahora = new Date();
-  const horaTexto = ahora.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
-
-  const turnos = getTurnosPOS();
-  if (turnos.length > 0) {
-    if (tipo === 'ENTRADA') {
-      turnos[0].estado_asistencia = 'PRESENTE';
-      turnos[0].hora_marcacion_entrada = horaTexto + ' hrs';
-      mostrarToast(`✅ Marcación de Entrada registrada exitosamente a las ${horaTexto} hrs.`, 'success');
-      registrarAuditoriaPOS('MARCACION_ENTRADA', 'RELOJ_CONTROL', `Marcación de entrada registrada a las ${horaTexto} hrs.`);
-    } else {
-      turnos[0].estado_asistencia = 'SALIDA_REGISTRADA';
-      mostrarToast(`🚪 Marcación de Salida registrada exitosamente a las ${horaTexto} hrs.`, 'info');
-      registrarAuditoriaPOS('MARCACION_SALIDA', 'RELOJ_CONTROL', `Marcación de salida registrada a las ${horaTexto} hrs.`);
-    }
-    localStorage.setItem(STORAGE_KEYS_POS.TURNOS, JSON.stringify(turnos));
-    renderTurnosPOS();
-  }
-
-  fetch('api/schedules/save.php', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: tipo === 'ENTRADA' ? 'clock_in' : 'clock_out', usuario_id: 3 })
-  }).catch(() => {});
+// Aliases de compatibilidad para calendarios y reloj control
+if (typeof window !== 'undefined') {
+  window.abrirGoogleCalendarPOS = function(id) { if (typeof agregarTurnoGoogleCalendar === 'function') agregarTurnoGoogleCalendar(id); };
+  window.descargarAppleCalendarIcsPOS = function(id) { if (typeof descargarTurnoIcs === 'function') descargarTurnoIcs(id); };
+  window.descargarTodosLosTurnosIcsPOS = function() { if (typeof descargarTodosTurnosIcs === 'function') descargarTodosTurnosIcs(); };
+  window.marcarAsistenciaRelojControlPOS = function(tipo) {
+    if (tipo === 'ENTRADA') marcarEntradaTrabajador();
+    else marcarSalidaTrabajador();
+  };
 }
 
 // -------------------------------------------------------------

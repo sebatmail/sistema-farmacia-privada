@@ -580,6 +580,83 @@
 
       </div>
 
+    
+    <!-- ================================================================= -->
+    <!-- PESTAÑA: HORARIOS Y TURNOS DEL PERSONAL (GOOGLE & APPLE CALENDAR) -->
+    <!-- ================================================================= -->
+    <section id="view-turnos_pos" class="hidden space-y-6">
+      
+      <!-- Banner de Encabezado -->
+      <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-800 flex flex-wrap justify-between items-center gap-4">
+        <div>
+          <span class="text-xs text-indigo-400 font-bold uppercase tracking-wider block mb-1">
+            ● GESTIÓN DE PERSONAL & JORNADAS LABORALES
+          </span>
+          <h2 class="text-2xl sm:text-3xl font-black tracking-tight">Horarios y Turnos de los Trabajadores</h2>
+          <p class="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl">
+            Consulta tus turnos asignados (Vicente Flores, Sebastián Torres, personal de bodega y cajeros), registra tu hora de entrada/salida y sincroniza tu horario con Google Calendar o Apple Calendar (.ics).
+          </p>
+        </div>
+
+        <div class="flex flex-wrap gap-2">
+          <button onclick="descargarTodosTurnosIcs()" class="px-4 py-2.5 bg-white hover:bg-slate-100 text-slate-900 font-extrabold rounded-xl text-xs flex items-center gap-2 shadow-sm transition-all cursor-pointer">
+            <svg class="w-4 h-4 text-slate-800" fill="currentColor" viewBox="0 0 170 170">
+              <path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.35.13-9.16-1.9-14.42-6.08-3.7-3.04-7.66-7.83-11.91-14.35-6.19-9.59-11.03-20.73-14.52-33.43-3.48-12.69-5.23-24.81-5.23-36.36 0-16.14 4.09-29.67 12.27-40.59 8.18-10.92 18.57-16.49 31.17-16.71 4.58 0 9.87 1.15 15.89 3.44 6.01 2.29 10.15 3.48 12.41 3.59 1.96 0 6.13-1.25 12.51-3.75 6.38-2.5 11.75-3.65 16.11-3.44 12.06.66 21.84 5.39 29.35 14.19-10.66 6.42-15.88 15.35-15.66 26.79.22 8.93 3.69 16.33 10.42 22.21 6.73 5.88 14.86 9.3 24.39 10.27-2.18 6.64-4.89 13.33-8.15 20.08zM119.22 31.84c0-7.73 2.77-15.02 8.32-21.88 5.55-6.86 12.35-10.99 20.4-12.4 0 .98.05 1.9.05 2.76 0 7.62-2.93 15-8.79 22.14-5.86 7.13-12.63 11.23-20.31 12.3-.33-.98-.49-1.96-.49-2.92z"/>
+            </svg>
+            <span>🍏 Descargar Calendario Completo (.ics)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Tarjeta de Reloj Control y Marcación de Entrada/Salida -->
+      <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs flex flex-wrap justify-between items-center gap-4">
+        
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 rounded-2xl bg-indigo-50 border border-indigo-200 text-indigo-700 flex items-center justify-center text-2xl font-bold">
+            ⏰
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span id="reloj-control-hora" class="text-2xl font-black font-mono text-slate-900">08:28:15 hrs</span>
+              <span id="reloj-badge-estado" class="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                TURNO EN CURSO
+              </span>
+            </div>
+            <p class="text-xs text-slate-500 mt-0.5">
+              Trabajador: <strong id="reloj-operador-nombre" class="text-slate-800">Vicente Flores</strong> (Caja 02 • Turno Mañana 08:30 - 16:30)
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2.5">
+          <button onclick="marcarEntradaTrabajador()" id="btn-marcar-entrada" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl text-xs flex items-center gap-1.5 shadow-sm transition-all cursor-pointer">
+            <span>⏱️</span>
+            <span>Marcar Entrada (08:28)</span>
+          </button>
+          <button onclick="marcarSalidaTrabajador()" id="btn-marcar-salida" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold rounded-xl text-xs flex items-center gap-1.5 border border-slate-300 transition-all cursor-pointer">
+            <span>🚪</span>
+            <span>Marcar Salida</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Filtro Rápido por Trabajador -->
+      <div class="flex items-center justify-between flex-wrap gap-3">
+        <h3 class="text-base font-extrabold text-slate-900">Próximos Turnos Programados para el Equipo</h3>
+        <div class="flex gap-1.5 text-xs">
+          <button onclick="filtrarTurnosPorOperador('TODOS')" id="btn-filtro-turnos-todos" class="px-3 py-1.5 rounded-lg font-bold bg-indigo-600 text-white shadow-2xs">Todos</button>
+          <button onclick="filtrarTurnosPorOperador('Vicente Flores')" id="btn-filtro-turnos-vicente" class="px-3 py-1.5 rounded-lg font-medium text-slate-600 hover:bg-slate-200">Vicente Flores</button>
+          <button onclick="filtrarTurnosPorOperador('Sebastián Torres')" id="btn-filtro-turnos-sebastian" class="px-3 py-1.5 rounded-lg font-medium text-slate-600 hover:bg-slate-200">Sebastián Torres (QF)</button>
+          <button onclick="filtrarTurnosPorOperador('Operador Bodega')" id="btn-filtro-turnos-bodega" class="px-3 py-1.5 rounded-lg font-medium text-slate-600 hover:bg-slate-200">Bodega FEFO</button>
+        </div>
+      </div>
+
+      <!-- Contenedor Dinámico de Tarjetas de Turnos -->
+      <div id="contenedor-turnos-pos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Renderizado dinámico vía app.js -->
+      </div>
+
     </section>
 
   </main>

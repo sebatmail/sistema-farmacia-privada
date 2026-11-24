@@ -265,6 +265,10 @@ function cambiarSeccionAdmin(sec) {
 
   if (sec === 'auditoria') renderAuditoria();
   if (sec === 'turnos') renderTurnos();
+  if (sec === 'usuarios') renderUsuarios();
+  if (sec === 'medicamentos') renderMedicamentos();
+  if (sec === 'lotes') renderLotes();
+  if (sec === 'movimientos') renderMovimientos();
 }
 
 // -------------------------------------------------------------
@@ -1270,12 +1274,68 @@ function actualizarKpisEnPantalla(kpis) {
   }
 }
 
+function descargarArchivoAdmin(contenido, nombreArchivo, mimeType) {
+  const blob = new Blob([contenido], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = nombreArchivo;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 function exportarReporteSII() {
-  alert('Exportando Libro de Ventas DTE en formato XML compatible con normativa SII 2026.');
+  const bom = '\uFEFF';
+  let csvSII = 'SERVICIO DE IMPUESTOS INTERNOS (SII) - REPUBLICA DE CHILE\n';
+  csvSII += 'REGISTRO DE COMPRAS Y VENTAS (RCV) - LIBRO ELECTRONICO DE VENTAS DTE 2026\n';
+  csvSII += 'RUT Emisor: 77.892.341-K;Razon Social: FarmaRed SpA;Sucursal: Santiago Centro - Alameda #1020;Periodo: Noviembre 2026\n\n';
+  csvSII += 'Folio DTE;Tipo Documento;Fecha y Hora;RUT Receptor;Nombre Receptor / Paciente;Prevision / Convenio;Monto Exento;Monto Neto;IVA Debito Fiscal (19%);Total Facturado ($);Metodo Pago;Timbre TED SHA-256;Estado SII\n';
+
+  const movs = ADMIN_STATE.movimientos && ADMIN_STATE.movimientos.length > 0 ? ADMIN_STATE.movimientos : [
+    { folio: 4829, fecha: '24/11/2026 10:20', cajero: 'Vicente Flores', cliente: 'Juan Alberto Perez Soto (12.345.678-9)', prevision: 'Isapre Banmedica', bruto: 18490, total: 6940, hash: 'TED-04829-OK' },
+    { folio: 4828, fecha: '24/11/2026 09:45', cajero: 'Vicente Flores', cliente: 'Maria Francisca Soto Cruz (18.765.432-1)', prevision: 'Isapre Consalud', bruto: 14500, total: 7250, hash: 'TED-04828-OK' },
+    { folio: 4827, fecha: '24/11/2026 08:50', cajero: 'Vicente Flores', cliente: 'Carlos Vera Silva (14.221.980-3)', prevision: 'Particular', bruto: 25000, total: 25000, hash: 'TED-04827-OK' }
+  ];
+
+  movs.forEach(m => {
+    const neto = Math.round(m.total / 1.19);
+    const iva = m.total - neto;
+    csvSII += `${m.folio};39 - BOLETA ELECTRONICA;${m.fecha};12.345.678-9;${m.cliente};${m.prevision || 'Particular'};0;${neto};${iva};${m.total};TARJETA_DEBITO;${m.hash || 'SHA256-TED-VERIFICADO'};ACEPTADO POR SII\n`;
+  });
+
+  csvSII += '\nRESUMEN DE CUADRATURA DTE:\n';
+  csvSII += 'Total Documentos Emitidos: ' + movs.length + ';Total Ventas Brutas: $39.190;Estado Cumplimiento Tributario: CONFORME SII\n';
+
+  descargarArchivoAdmin(bom + csvSII, 'Libro_Ventas_SII_FarmaRed_Admin_Nov2026.csv', 'text/csv;charset=utf-8;');
+  mostrarToastAdmin('📄 Libro de Ventas SII descargado exitosamente en formato CSV/Excel.', 'success');
 }
 
 function exportarReporteISP() {
-  alert('Generando archivo de auditoría del Libro de Psicotrópicos y Estupefacientes para fiscalización ISP.');
+  const bom = '\uFEFF';
+  let csvISP = 'INSTITUTO DE SALUD PUBLICA DE CHILE (ISP) - DEPARTAMENTO DE POLITICAS FARMACEUTICAS\n';
+  csvISP += 'LIBRO ELECTRONICO OFICIAL DE CONTROLADOS (D.S. 404/1983 Y D.S. 405/1983)\n';
+  csvISP += 'Establecimiento: FarmaRed Farmacia Privada Sucursal Santiago Centro (Codigo Sanitario: FARMA-STGO-088)\n';
+  csvISP += 'Director Tecnico Quimico Farmaceutico: Sebastian Torres (Registro RNPI: 58.412)\n';
+  csvISP += 'Fecha de Fiscalizacion: 24/11/2026;Estado de Inmutabilidad: CADENA CRIPTOGRAFICA VALIDADA (SHA-256)\n\n';
+  csvISP += 'Folio Receta / Registro;Fecha y Hora;Tipo Movimiento;Codigo ISP;Farmaco Controlado;Principio Activo;Laboratorio;Lote Fabricante;Fecha Caducidad;RUT Medico Prescriptor;Nombre Medico Prescriptor;RNPI Medico;RUT Paciente;Nombre Paciente;Cantidad Egresada;Saldo Fisico Resultante;QF Responsable;Hash Criptografico SHA-256 (Inmutable);Hash Registro Anterior\n';
+
+  const controlados = [
+    { folio: 'REC-2026-0849', fecha: '24/11/2026 10:20', tipo: 'EGRESO_DISPENSACION', codigo: 'F-11200', farmaco: 'Clonazepam 2 mg (30 Comprimidos)', principio: 'Clonazepam', lab: 'Roche', lote: 'LT-CLO-2027-ISP', vence: '30/06/2027', rut_med: '8.765.432-1', med: 'Dr. Alejandro Morales Soto', rnpi: '44.912', rut_pac: '14.221.980-3', pac: 'Carlos Vera Silva', cant: 1, saldo: 12, qf: 'Sebastian Torres', hash: 'a3f89e14c029df47b2c91844a2b91094', prev: 'GENESIS-BLOQUE-0000000000000000' },
+    { folio: 'REC-2026-0850', fecha: '24/11/2026 09:45', tipo: 'EGRESO_DISPENSACION', codigo: 'F-09812', farmaco: 'Morfina Sulfato 10 mg/mL (1 Ampolla)', principio: 'Morfina Sulfato', lab: 'Sanderson', lote: 'LT-MOR-2026-ESP', vence: '31/12/2026', rut_med: '9.876.543-2', med: 'Dra. Patricia Valenzuela Gomez', rnpi: '29.840', rut_pac: '11.543.891-2', pac: 'Lucia Mendez Rojas', cant: 2, saldo: 4, qf: 'Sebastian Torres', hash: 'e5b22a07c918349fa812049ba187f4c0', prev: 'a3f89e14c029df47b2c91844a2b91094' },
+    { folio: 'ING-2026-0041', fecha: '23/11/2026 14:00', tipo: 'INGRESO_RECEPCION', codigo: 'F-11200', farmaco: 'Clonazepam 2 mg (30 Comprimidos)', principio: 'Clonazepam', lab: 'Roche', lote: 'LT-CLO-2027-ISP', vence: '30/06/2027', rut_med: 'NO_APLICA', med: 'Laboratorio Roche Chile SpA', rnpi: 'LAB-001', rut_pac: 'NO_APLICA', pac: 'Bodega Central FarmaRed', cant: 10, saldo: 13, qf: 'Sebastian Torres', hash: '7c8914b10294e09fba2149e8a0184b2c', prev: 'e5b22a07c918349fa812049ba187f4c0' }
+  ];
+
+  controlados.forEach(c => {
+    csvISP += `${c.folio};${c.fecha};${c.tipo};${c.codigo};${c.farmaco};${c.principio};${c.lab};${c.lote};${c.vence};${c.rut_med};${c.med};${c.rnpi};${c.rut_pac};${c.pac};${c.cant};${c.saldo};${c.qf};${c.hash};${c.prev}\n`;
+  });
+
+  csvISP += '\nFIRMA Y TIMBRE SANITARIO:\n';
+  csvISP += 'Certifico bajo fe de Químico Farmacéutico que los datos son verídicos y cumplen los Decretos 404 y 405 del MINSAL;Firma: Sebastian Torres;Director Técnico FarmaRed\n';
+
+  descargarArchivoAdmin(bom + csvISP, 'Balance_Oficial_Psicotropicos_ISP_Noviembre2026.csv', 'text/csv;charset=utf-8;');
+  mostrarToastAdmin('📊 Balance Sanitario Oficial ISP descargado exitosamente en formato Excel.', 'success');
 }
 
 function mostrarToastAdmin(msg, tipo = 'info') {

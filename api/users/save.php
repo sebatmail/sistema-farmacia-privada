@@ -25,13 +25,26 @@ try {
             $stmt = $db->prepare("UPDATE usuarios SET rut = ?, nombre = ?, email = ?, rol = ?, activo = ? WHERE id = ?");
             $stmt->execute([$rut, $nombre, $email, $rol, $activo, $id]);
         }
+        
+        try {
+            $stmtAudit = $db->prepare("INSERT INTO auditoria_usuarios (usuario_id, nombre_usuario, rol, accion, modulo, detalles, ip_origen) VALUES (?, ?, ?, ?, ?, ?, ?)");
+            $stmtAudit->execute([1, 'Administrador General', 'ADMIN', 'MODIFICACION_USUARIO', 'GESTION_USUARIOS', "Modificación de datos para usuario ID #{$id} ({$nombre} - {$rol})", $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1']);
+        } catch (Exception $ea) {}
+        
         jsonResponse(['success' => true, 'message' => 'Usuario actualizado exitosamente.']);
     } else {
         $rawPass = !empty($password) ? $password : 'inacap2026';
         $hash = password_hash($rawPass, PASSWORD_BCRYPT);
         $stmt = $db->prepare("INSERT INTO usuarios (rut, nombre, email, rol, activo, password) VALUES (?, ?, ?, ?, ?, ?)");
         $stmt->execute([$rut, $nombre, $email, $rol, $activo, $hash]);
-        jsonResponse(['success' => true, 'message' => 'Nuevo trabajador registrado exitosamente.']);
+        $newId = $db->lastInsertId();
+        
+        try {
+            $stmtAudit = $db->prepare("INSERT INTO auditoria_usuarios (usuario_id, nombre_usuario, rol, accion, modulo, detalles, ip_origen) VALUES (?, ?, ?, ?, ?, ?, ?)");
+            $stmtAudit->execute([1, 'Administrador General', 'ADMIN', 'CREACION_USUARIO', 'GESTION_USUARIOS', "Creación de nuevo usuario {$nombre} ({$email} - Rol: {$rol})", $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1']);
+        } catch (Exception $ea) {}
+
+        jsonResponse(['success' => true, 'id' => $newId, 'message' => 'Nuevo trabajador registrado exitosamente.']);
     }
 } catch (Exception $e) {
     jsonResponse(['success' => false, 'error' => $e->getMessage()], 500);

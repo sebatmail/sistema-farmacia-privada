@@ -42,6 +42,7 @@
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
     }
     /* Colapsado en Desktop */
+    /* Colapsado en Desktop (Icon-Only Mode estilo Pump Fitness) */
     .sidebar-collapsed {
       width: 4.75rem !important;
     }
@@ -56,6 +57,12 @@
     }
     .sidebar-collapsed .sidebar-brand-box {
       justify-content: center;
+    }
+    .sidebar-link.active {
+      background-color: #18191e !important;
+      color: #ffffff !important;
+      border: 1px solid #282b35 !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
     }
     .kpi-dark-card {
       background-color: #121318;
@@ -72,52 +79,142 @@
 </head>
 <body class="h-full overflow-hidden flex flex-col antialiased selection:bg-emerald-500 selection:text-white">
 
-  <!-- OVERLAY LOGIN ADMINISTRATIVO -->
-  <div id="admin-login-overlay" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-200">
+  <!-- OVERLAY LOGIN ADMINISTRATIVO & RECUPERACIÓN VÍA ENLACE DE CORREO -->
+  <div id="admin-login-overlay" class="fixed inset-0 bg-[#090a0d]/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    
+    <!-- VISTA 1: INICIO DE SESIÓN OFICIAL -->
+    <div id="view-login" class="bg-[#121318] border border-[#22252e] rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl text-slate-200">
       
       <div class="text-center space-y-2 mb-6">
-        <div class="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-tr from-slate-900 to-indigo-900 flex items-center justify-center text-white shadow-md text-2xl">
-          🔒
+        <div class="inline-flex items-center gap-2 px-3 py-1 bg-red-600/20 text-red-400 border border-red-500/30 rounded-full text-[10px] font-black tracking-wider uppercase">
+          <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
+          FARMARED PRO
         </div>
-        <h2 class="text-xl font-black tracking-tight text-slate-900">Consola de Administración</h2>
-        <p class="text-xs text-slate-500">Acceso restringido para el Administrador de Local y Docente Evaluador (Juan José Mir Castillo).</p>
+        <h2 class="text-2xl font-black tracking-tight text-white">Consola de Administración</h2>
+        <p class="text-xs text-slate-400">Acceso exclusivo para el Administrador de Farmacia y Docente Evaluador (Prof. Juan José Mir Castillo).</p>
       </div>
 
       <div class="space-y-4 text-xs">
         <div>
-          <label class="block font-bold text-slate-700 mb-1">Correo Institucional:</label>
-          <input id="login-email" type="email" value="admin@farmacia.cl" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl font-medium outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50">
+          <label class="block font-bold text-slate-300 mb-1">Correo Institucional:</label>
+          <input id="login-email" type="email" value="admin@farmacia.cl" class="w-full px-3.5 py-2.5 bg-[#181a20] border border-[#2b303c] rounded-xl font-medium text-white outline-none focus:ring-2 focus:ring-red-500">
         </div>
 
         <div>
-          <label class="block font-bold text-slate-700 mb-1">Contraseña Oficial:</label>
-          <input id="login-password" type="password" value="inacap2026" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl font-mono font-bold outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50">
-          <p class="text-[10px] text-slate-400 mt-1">Clave oficial del proyecto: <strong class="text-emerald-700">inacap2026</strong></p>
+          <div class="flex justify-between items-center mb-1">
+            <label class="font-bold text-slate-300">Contraseña Oficial:</label>
+            <button type="button" onclick="mostrarVistaRecuperar()" class="text-red-400 hover:text-red-300 font-bold text-[11px] underline cursor-pointer">
+              ¿Olvidaste tu contraseña?
+            </button>
+          </div>
+          <input id="login-password" type="password" value="inacap2026" class="w-full px-3.5 py-2.5 bg-[#181a20] border border-[#2b303c] rounded-xl font-mono font-bold text-white outline-none focus:ring-2 focus:ring-red-500">
+          <p class="text-[10px] text-slate-500 mt-1">Clave de titulación: <strong class="text-emerald-400 font-bold">inacap2026</strong></p>
         </div>
 
-        <div id="login-error" class="hidden p-2.5 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl font-semibold text-[11px] text-center">
-          Credenciales incorrectas. Verifique la contraseña.
+        <div id="login-error" class="hidden p-2.5 bg-rose-950/60 border border-rose-800 text-rose-300 rounded-xl font-semibold text-[11px] text-center">
+          Credenciales incorrectas. Verifique correo y contraseña.
         </div>
 
-        <button onclick="autenticarAdmin()" class="w-full py-3 bg-gradient-to-r from-slate-900 to-indigo-950 hover:from-slate-800 hover:to-indigo-900 text-white font-extrabold rounded-xl shadow-md transition-all text-sm flex items-center justify-center gap-2 cursor-pointer">
-          Desbloquear Consola Gerencial
+        <button onclick="autenticarAdmin()" class="w-full py-3 bg-red-600 hover:bg-red-500 text-white font-black rounded-xl shadow-lg shadow-red-900/30 transition-all text-sm flex items-center justify-center gap-2 cursor-pointer">
+          <span>Desbloquear Consola Gerencial</span>
+          <span>→</span>
         </button>
 
-        <div class="pt-2 text-center">
-          <button type="button" onclick="abrirModalRecuperarCuenta()" class="text-indigo-600 hover:text-indigo-800 font-bold text-xs underline cursor-pointer">
-            ¿Olvidaste tu contraseña? / Recuperar Cuenta 🔑
-          </button>
-        </div>
-
-        <div class="pt-3 border-t border-slate-200 text-center">
-          <a href="../index.html" class="text-slate-500 hover:text-slate-800 font-semibold text-[11px]">
-            ← Volver a Sala de Ventas (Punto de Venta)
+        <div class="pt-3 border-t border-[#1e2128] flex justify-between items-center text-[11px]">
+          <a href="../index.html" class="text-slate-400 hover:text-white font-semibold transition-colors">
+            ← Ir a Punto de Venta (POS)
           </a>
+          <button type="button" onclick="mostrarVistaRecuperar()" class="text-red-400 hover:text-red-300 font-bold">
+            Recuperar Cuenta 🔑
+          </button>
         </div>
       </div>
 
     </div>
+
+    <!-- VISTA 2: RECUPERACIÓN VÍA ENLACE DE CORREO (ANTES DE INICIAR SESIÓN) -->
+    <div id="view-recuperar" class="hidden bg-[#121318] border border-[#22252e] rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl text-slate-200">
+      
+      <div class="text-center space-y-2 mb-6">
+        <div class="w-12 h-12 mx-auto rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 text-xl shadow-inner">
+          🔑
+        </div>
+        <h2 class="text-xl font-black tracking-tight text-white">Recuperar Cuenta</h2>
+        <p class="text-xs text-slate-400">Ingresa tu correo institucional registrado para recibir un enlace de restablecimiento seguro en tu casilla.</p>
+      </div>
+
+      <div class="space-y-4 text-xs">
+        <div>
+          <label class="block font-bold text-slate-300 mb-1">Correo Electrónico Registrado:</label>
+          <input id="rec-email" type="email" placeholder="admin@farmacia.cl" value="admin@farmacia.cl" class="w-full px-3.5 py-2.5 bg-[#181a20] border border-[#2b303c] rounded-xl font-medium text-white outline-none focus:ring-2 focus:ring-red-500">
+        </div>
+
+        <button id="btn-solicitar-enlace" onclick="solicitarEnlaceRecuperacion()" class="w-full py-3 bg-red-600 hover:bg-red-500 text-white font-black rounded-xl shadow-md transition-all text-xs flex items-center justify-center gap-2 cursor-pointer">
+          📧 Enviar Enlace de Recuperación al Correo
+        </button>
+
+        <!-- CAJA DE SIMULACIÓN DE CORREO ENTRANTE (PARA DEMO EN CLASES) -->
+        <div id="rec-simulacion-box" class="hidden p-4 bg-[#181a20] border border-[#2b303c] rounded-2xl space-y-3">
+          <div class="flex items-center gap-2 text-emerald-400 font-bold text-xs">
+            <span>📬</span>
+            <span>Correo Enviado Exitosamente</span>
+          </div>
+          <p class="text-[11px] text-slate-300">
+            Hemos enviado un correo a <strong id="rec-simulacion-target" class="text-white font-mono">admin@farmacia.cl</strong> con el enlace criptográfico de restablecimiento.
+          </p>
+          <button id="btn-simular-abrir-correo" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-xl text-xs transition-all cursor-pointer">
+            🔗 Abrir Enlace del Correo (Restablecer Contraseña)
+          </button>
+        </div>
+
+        <div class="pt-3 border-t border-[#1e2128] text-center">
+          <button type="button" onclick="mostrarVistaLogin()" class="text-slate-400 hover:text-white font-bold text-xs">
+            ← Volver al Inicio de Sesión
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- VISTA 3: CREAR NUEVA CONTRASEÑA CON TOKEN -->
+    <div id="view-restablecer" class="hidden bg-[#121318] border border-[#22252e] rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl text-slate-200">
+      
+      <div class="text-center space-y-2 mb-6">
+        <div class="w-12 h-12 mx-auto rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-xl shadow-inner">
+          🔒
+        </div>
+        <h2 class="text-xl font-black tracking-tight text-white">Restablecer Contraseña</h2>
+        <p class="text-xs text-slate-400">Crea una nueva contraseña para la cuenta: <strong id="restablecer-target-user" class="text-emerald-400 font-mono">admin@farmacia.cl</strong></p>
+      </div>
+
+      <input type="hidden" id="restablecer-token" value="">
+      <input type="hidden" id="restablecer-email" value="">
+
+      <div class="space-y-4 text-xs">
+        <div>
+          <label class="block font-bold text-slate-300 mb-1">Nueva Contraseña (mínimo 6 caracteres):</label>
+          <input id="restablecer-pass1" type="password" placeholder="••••••••" class="w-full px-3.5 py-2.5 bg-[#181a20] border border-[#2b303c] rounded-xl font-mono text-white outline-none focus:ring-2 focus:ring-emerald-500">
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-300 mb-1">Confirmar Nueva Contraseña:</label>
+          <input id="restablecer-pass2" type="password" placeholder="••••••••" class="w-full px-3.5 py-2.5 bg-[#181a20] border border-[#2b303c] rounded-xl font-mono text-white outline-none focus:ring-2 focus:ring-emerald-500">
+        </div>
+
+        <button onclick="restablecerPasswordConEnlace()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-xl shadow-md transition-all text-xs flex items-center justify-center gap-2 cursor-pointer">
+          💾 Guardar Nueva Contraseña en Base de Datos
+        </button>
+
+        <div class="pt-2 text-center">
+          <button type="button" onclick="mostrarVistaLogin()" class="text-slate-400 hover:text-white font-bold text-xs">
+            Cancelar y Volver al Login
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
 
   <!-- BACKDROP MÓVIL (DRAWER) -->
   <div id="mobile-sidebar-backdrop" onclick="toggleMobileSidebar()" class="fixed inset-0 bg-black/70 backdrop-blur-xs z-40 hidden md:hidden transition-opacity"></div>
@@ -133,15 +230,15 @@
       <!-- Encabezado Sidebar: Logo, Marca y Botón Colapsar '<' -->
       <div class="p-4 border-b border-[#1e2128] flex items-center justify-between gap-2">
         <div class="sidebar-brand-box flex items-center gap-2.5 overflow-hidden">
-          <div class="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center text-white font-extrabold text-xs shadow-md shrink-0">
-            FR
+          <div class="px-2 py-0.5 rounded-md bg-red-600 text-white font-black text-xs tracking-wider shrink-0 shadow-sm shadow-red-900/40">
+            FARMA
           </div>
           <div class="sidebar-text overflow-hidden">
             <div class="flex items-center gap-1.5">
-              <span class="font-extrabold tracking-tight text-white text-sm">FARMARED</span>
-              <span class="px-1.5 py-0.2 bg-emerald-500/20 text-emerald-400 font-bold text-[9px] rounded border border-emerald-500/30">PRO</span>
+              <span class="font-black tracking-tight text-white text-sm">FARMARED</span>
+              <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
             </div>
-            <p class="sidebar-subtext text-[9px] text-slate-500 font-semibold tracking-wider uppercase truncate">SANTIAGO · FARMACIA</p>
+            <p class="sidebar-subtext text-[8.5px] text-slate-500 font-bold tracking-wider uppercase truncate">SANTIAGO · HIGH PERFORMANCE</p>
           </div>
         </div>
 
@@ -508,33 +605,39 @@
         </div>
       </div>
     </section>
-          <section id="sec-usuarios" class="hidden space-y-4">
-      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex justify-between items-center flex-wrap gap-2">
+          <section id="sec-usuarios" class="hidden space-y-5">
+      <!-- Encabezado de Sección Estilo Pump Fitness -->
+      <div class="flex items-center justify-between flex-wrap gap-4 pb-2 border-b border-[#1e2128]">
         <div>
-          <h2 class="text-base font-extrabold text-slate-900">Personal Registrado & Control de Accesos (RBAC)</h2>
-          <p class="text-xs text-slate-500">Cuentas habilitadas con contraseñas seguras e inhabilitación inmediata.</p>
+          <div class="text-[10px] font-extrabold text-red-500 tracking-wider uppercase mb-1">
+            SEGURIDAD / GESTIÓN DE PERSONAL & ACCESOS
+          </div>
+          <h2 class="text-xl sm:text-2xl font-black text-white tracking-tight">Cuentas y Accesos del Personal</h2>
+          <p class="text-xs text-slate-400 mt-0.5">Control de credenciales, roles RBAC y restablecimiento de contraseñas de trabajadores.</p>
         </div>
-        <button onclick="abrirModalNuevoUsuario()" class="px-4 py-2.5 bg-indigo-700 hover:bg-indigo-800 text-white rounded-xl text-xs font-extrabold flex items-center gap-1.5 shadow-xs transition-all">
-          <span>+</span> Agregar Nuevo Trabajador
+
+        <button onclick="abrirModalNuevoUsuario()" class="px-4 py-2.5 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-black flex items-center gap-2 shadow-lg shadow-red-900/30 transition-all cursor-pointer">
+          <span class="text-base font-bold">+</span>
+          <span>+ Nuevo Trabajador</span>
         </button>
       </div>
 
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+      <!-- Tabla Dark de Personal -->
+      <div class="kpi-dark-card overflow-hidden !p-0">
         <div class="overflow-x-auto">
           <table class="w-full text-left text-xs border-collapse">
             <thead>
-              <tr class="bg-slate-50 text-slate-700 border-b border-slate-200 font-bold">
-                <th class="py-3 px-4">RUT</th>
-                <th class="py-3 px-4">Nombre Completo</th>
-                <th class="py-3 px-4">Correo Electrónico</th>
-                <th class="py-3 px-4">Rol Asignado</th>
-                <th class="py-3 px-4 text-center">Contraseña Oficial</th>
-                <th class="py-3 px-4 text-center">Estado</th>
-                <th class="py-3 px-4 text-center">Acción</th>
+              <tr class="bg-[#16181f] text-slate-400 border-b border-[#22252e] font-bold text-[11px] tracking-wider uppercase">
+                <th class="py-3.5 px-4">Trabajador / Nombre</th>
+                <th class="py-3.5 px-4">RUT Oficial</th>
+                <th class="py-3.5 px-4">Correo Institucional</th>
+                <th class="py-3.5 px-4">Rol / Perfil</th>
+                <th class="py-3.5 px-4 text-center">Estado</th>
+                <th class="py-3.5 px-4 text-center">Acciones de Cuenta</th>
               </tr>
             </thead>
-            <tbody id="usuarios-body" class="divide-y divide-slate-100">
-              <!-- Se puebla dinámicamente -->
+            <tbody id="usuarios-body" class="divide-y divide-[#1e2128] font-medium text-slate-300">
+              <!-- Renderizado dinámico vía JavaScript -->
             </tbody>
           </table>
         </div>
@@ -715,83 +818,86 @@
             <input id="med-principio" type="text" placeholder="ej. Paracetamol" class="w-full p-2 border border-slate-300 rounded-xl outline-none">
           </div>
         </div>
-  <div id="modal-usuario" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-base font-black text-slate-900">Registrar Nuevo Trabajador</h3>
-        <button onclick="cerrarModalUsuario()" class="text-slate-400 hover:text-slate-700 font-bold text-lg">&times;</button>
+  <!-- MODAL NUEVO/EDITAR TRABAJADOR DARK -->
+  <div id="modal-usuario" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-[#121318] border border-[#262a34] rounded-3xl max-w-md w-full p-6 shadow-2xl text-slate-200">
+      <div class="flex justify-between items-center mb-5 pb-3 border-b border-[#1e2128]">
+        <div>
+          <span class="text-[9px] font-black uppercase text-red-500 tracking-wider">GESTIÓN DE PERSONAL</span>
+          <h3 id="modal-usr-titulo" class="text-base font-black text-white">Registrar Nuevo Trabajador</h3>
+        </div>
+        <button onclick="cerrarModalUsuario()" class="w-8 h-8 rounded-lg bg-[#181a20] hover:bg-[#22252e] border border-[#262a34] flex items-center justify-center text-slate-400 hover:text-white transition-all text-sm font-bold">&times;</button>
       </div>
 
-      <div class="space-y-3 text-xs">
+      <input type="hidden" id="usr-id-hidden" value="0">
+
+      <div class="space-y-3.5 text-xs">
         <div>
-          <label class="block font-bold text-slate-700 mb-1">RUT del Empleado:</label>
-          <input id="usr-rut" type="text" placeholder="12.345.678-9" class="w-full p-2 border border-slate-300 rounded-xl font-mono outline-none">
+          <label class="block font-bold text-slate-400 mb-1">RUT del Empleado (con guion y dígito):</label>
+          <input id="usr-rut" type="text" placeholder="12.345.678-9" class="w-full px-3.5 py-2.5 bg-[#181a20] border border-[#2b303c] rounded-xl font-mono text-white outline-none focus:border-red-500">
         </div>
         <div>
-          <label class="block font-bold text-slate-700 mb-1">Nombre Completo:</label>
-          <input id="usr-nombre" type="text" placeholder="Ej. Camila Morales Soto" class="w-full p-2 border border-slate-300 rounded-xl outline-none">
+          <label class="block font-bold text-slate-400 mb-1">Nombre Completo:</label>
+          <input id="usr-nombre" type="text" placeholder="Ej. Vicente Flores" class="w-full px-3.5 py-2.5 bg-[#181a20] border border-[#2b303c] rounded-xl text-white outline-none focus:border-red-500">
         </div>
         <div>
-          <label class="block font-bold text-slate-700 mb-1">Correo Institucional:</label>
-          <input id="usr-email" type="email" placeholder="cmorales@farmacia.cl" class="w-full p-2 border border-slate-300 rounded-xl outline-none">
+          <label class="block font-bold text-slate-400 mb-1">Correo Electrónico Institucional:</label>
+          <input id="usr-email" type="email" placeholder="vflores@farmacia.cl" class="w-full px-3.5 py-2.5 bg-[#181a20] border border-[#2b303c] rounded-xl text-white outline-none focus:border-red-500">
         </div>
         <div>
-          <label class="block font-bold text-slate-700 mb-1">Rol / Perfil Asignado:</label>
-          <select id="usr-rol" class="w-full p-2 border border-slate-300 rounded-xl outline-none bg-white font-medium">
-            <option value="VENDEDOR">Vendedor / Cajero</option>
-            <option value="QUIMICO_FARMACEUTICO">Químico Farmacéutico (DT)</option>
-            <option value="BODEGUERO">Operador de Bodega</option>
-            <option value="ADMIN">Administrador General</option>
+          <label class="block font-bold text-slate-400 mb-1">Rol / Perfil de Acceso (RBAC):</label>
+          <select id="usr-rol" class="w-full px-3.5 py-2.5 bg-[#181a20] border border-[#2b303c] rounded-xl text-white outline-none focus:border-red-500">
+            <option value="VENDEDOR">Vendedor / Dispensador POS</option>
+            <option value="QUIMICO_FARMACEUTICO">Químico Farmacéutico (Regente Legal)</option>
+            <option value="BODEGUERO">Operador de Bodega / Logística FEFO</option>
+            <option value="ADMIN">Administrador General de Farmacia</option>
           </select>
         </div>
         <div>
-          <label class="block font-bold text-slate-700 mb-1">Contraseña:</label>
-          <input id="usr-pass" type="text" value="inacap2026" class="w-full p-2 border border-slate-300 rounded-xl font-mono font-bold outline-none">
+          <label class="block font-bold text-slate-400 mb-1">Contraseña Inicial / Asignada:</label>
+          <input id="usr-pass" type="text" placeholder="inacap2026" value="inacap2026" class="w-full px-3.5 py-2.5 bg-[#181a20] border border-[#2b303c] rounded-xl font-mono text-white outline-none focus:border-red-500">
+          <p class="text-[10px] text-slate-500 mt-1">Por defecto: <span class="text-emerald-400 font-bold">inacap2026</span></p>
+        </div>
+
+        <div class="pt-3 flex gap-2">
+          <button onclick="cerrarModalUsuario()" class="flex-1 py-2.5 bg-[#181a20] hover:bg-[#22252e] border border-[#2b303c] rounded-xl font-bold text-slate-400 transition-all">Cancelar</button>
+          <button onclick="guardarUsuarioAdmin()" class="flex-1 py-2.5 bg-red-600 hover:bg-red-500 text-white rounded-xl font-black shadow-md transition-all">Guardar Trabajador</button>
         </div>
       </div>
-  <div id="modal-recuperar-cuenta" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-200 animate-scale-up">
-      <div class="flex justify-between items-center mb-4">
-        <div class="flex items-center gap-2">
-          <div class="w-9 h-9 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-700 flex items-center justify-center font-bold">
-            🔑
-          </div>
-          <div>
-            <h3 class="text-base font-extrabold text-slate-900">Recuperar Acceso</h3>
-            <p class="text-xs text-slate-500">Restablecimiento seguro de credenciales</p>
-          </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CAMBIAR CONTRASEÑA DE CUALQUIER USUARIO (POR ADMINISTRADOR) -->
+  <div id="modal-cambiar-password" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-[#121318] border border-[#262a34] rounded-3xl max-w-md w-full p-6 shadow-2xl text-slate-200">
+      <div class="flex justify-between items-center mb-4 pb-3 border-b border-[#1e2128]">
+        <div>
+          <span class="text-[9px] font-black uppercase text-amber-500 tracking-wider">SEGURIDAD DE CREDENCIALES</span>
+          <h3 class="text-base font-black text-white">Cambiar Contraseña de Trabajador</h3>
         </div>
-        <button onclick="cerrarModalRecuperarCuenta()" class="text-slate-400 hover:text-slate-600 text-lg font-bold">✕</button>
+        <button onclick="cerrarModalCambiarPassword()" class="w-8 h-8 rounded-lg bg-[#181a20] hover:bg-[#22252e] border border-[#262a34] flex items-center justify-center text-slate-400 hover:text-white transition-all text-sm font-bold">&times;</button>
       </div>
 
-      <!-- Paso 1: Solicitar Código -->
-      <div id="rec-paso-1" class="space-y-3.5 text-xs">
-        <p class="text-slate-600">Ingrese su correo institucional registrado para generar su código PIN de verificación temporal.</p>
-        <div>
-          <label class="block font-bold text-slate-700 mb-1">Correo Electrónico:</label>
-          <input id="rec-email" type="email" value="admin@farmacia.cl" class="w-full p-2.5 border border-slate-300 rounded-xl font-medium outline-none focus:ring-2 focus:ring-indigo-500">
-        </div>
-        <button onclick="solicitarCodigoRecuperacion()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-xl shadow-xs cursor-pointer">
-          Enviar Código de Verificación
-        </button>
+      <div class="p-3 bg-[#181a20] rounded-xl border border-[#262a34] mb-4">
+        <p class="text-[11px] text-slate-400">Modificando contraseña para:</p>
+        <p id="modal-pwd-user-name" class="font-extrabold text-sm text-white mt-0.5">Sebastián Torres</p>
+        <p id="modal-pwd-user-rut" class="text-[10px] font-mono text-slate-500">18.765.432-1 (QUIMICO_FARMACEUTICO)</p>
       </div>
 
-      <!-- Paso 2: Validar Código y Cambiar Clave -->
-      <div id="rec-paso-2" class="hidden space-y-3.5 text-xs">
-        <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-[11px]">
-          <strong>Código generado con éxito:</strong> Ingréselo a continuación para crear su nueva contraseña.
+      <div class="space-y-3.5 text-xs">
+        <div>
+          <label class="block font-bold text-slate-400 mb-1">Nueva Contraseña (mínimo 6 caracteres):</label>
+          <input id="admin-new-user-pass1" type="password" placeholder="••••••••" class="w-full px-3.5 py-2.5 bg-[#181a20] border border-[#2b303c] rounded-xl font-mono text-white outline-none focus:border-amber-500">
         </div>
         <div>
-          <label class="block font-bold text-slate-700 mb-1">Código PIN (6 dígitos):</label>
-          <input id="rec-pin" type="text" placeholder="ej. 849201" maxlength="6" class="w-full p-2.5 border border-slate-300 rounded-xl font-mono font-bold text-center text-lg outline-none focus:ring-2 focus:ring-indigo-500">
+          <label class="block font-bold text-slate-400 mb-1">Confirmar Nueva Contraseña:</label>
+          <input id="admin-new-user-pass2" type="password" placeholder="••••••••" class="w-full px-3.5 py-2.5 bg-[#181a20] border border-[#2b303c] rounded-xl font-mono text-white outline-none focus:border-amber-500">
         </div>
-        <div>
-          <label class="block font-bold text-slate-700 mb-1">Nueva Contraseña:</label>
-          <input id="rec-nueva-pass" type="password" placeholder="Mínimo 6 caracteres" class="w-full p-2.5 border border-slate-300 rounded-xl font-medium outline-none focus:ring-2 focus:ring-indigo-500">
+
+        <div class="pt-3 flex gap-2">
+          <button onclick="cerrarModalCambiarPassword()" class="flex-1 py-2.5 bg-[#181a20] hover:bg-[#22252e] border border-[#2b303c] rounded-xl font-bold text-slate-400 transition-all">Cancelar</button>
+          <button onclick="guardarCambioPasswordAdmin()" class="flex-1 py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl font-black shadow-md transition-all">Actualizar Contraseña</button>
         </div>
-        <button onclick="restablecerPasswordConCodigo()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl shadow-xs cursor-pointer">
-          Actualizar y Restablecer Contraseña
-        </button>
       </div>
     </div>
   </div>

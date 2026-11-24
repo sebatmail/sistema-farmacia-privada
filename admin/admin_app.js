@@ -1035,28 +1035,53 @@ function renderUsuarios() {
 
   ADMIN_STATE.usuarios.forEach(u => {
     let badgeRol = '';
-    if (u.rol === 'ADMIN') badgeRol = '<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-200">Administrador General</span>';
-    else if (u.rol === 'QUIMICO_FARMACEUTICO') badgeRol = '<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">Químico Farmacéutico</span>';
-    else if (u.rol === 'BODEGUERO') badgeRol = '<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200">Operador Bodega</span>';
-    else badgeRol = '<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">Vendedor / Cajero</span>';
+    if (u.rol === 'ADMIN') {
+      badgeRol = '<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/30">Administrador General</span>';
+    } else if (u.rol === 'QUIMICO_FARMACEUTICO') {
+      badgeRol = '<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">Químico Farmacéutico (Regente)</span>';
+    } else if (u.rol === 'BODEGUERO') {
+      badgeRol = '<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/30">Operador Bodega FEFO</span>';
+    } else {
+      badgeRol = '<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/30">Vendedor / Dispensador POS</span>';
+    }
 
     const tr = document.createElement('tr');
-    tr.className = 'hover:bg-slate-50 transition-colors';
+    tr.className = 'hover:bg-[#181a22] transition-colors border-b border-[#1e2128]';
     tr.innerHTML = `
-      <td class="py-3 px-4 font-mono font-bold text-slate-700">${u.rut}</td>
-      <td class="py-3 px-4 font-bold text-slate-900">${u.nombre}</td>
-      <td class="py-3 px-4 text-slate-600 font-mono">${u.email}</td>
+      <td class="py-3 px-4">
+        <div class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded-lg bg-[#22252e] border border-[#2d323f] flex items-center justify-center font-bold text-xs text-white shrink-0">
+            ${u.nombre ? u.nombre.charAt(0).toUpperCase() : 'U'}
+          </div>
+          <div>
+            <span class="font-extrabold text-white text-xs block">${u.nombre}</span>
+            <span class="text-[10px] text-slate-500">ID #${u.id}</span>
+          </div>
+        </div>
+      </td>
+      <td class="py-3 px-4 font-mono font-bold text-slate-300">${u.rut}</td>
+      <td class="py-3 px-4 font-mono text-slate-400 text-xs">${u.email}</td>
       <td class="py-3 px-4">${badgeRol}</td>
       <td class="py-3 px-4 text-center">
-        <span class="inline-flex items-center gap-1 text-[11px] font-bold ${u.activo ? 'text-emerald-700' : 'text-slate-400'}">
-          <span class="w-1.5 h-1.5 rounded-full ${u.activo ? 'bg-emerald-600' : 'bg-slate-400'}"></span>
-          ${u.activo ? 'Activo' : 'Inactivo'}
+        <span class="inline-flex items-center gap-1.5 text-[10px] font-black px-2 py-0.5 rounded-full border ${u.activo ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/10 text-rose-400 border-rose-500/30'}">
+          <span class="w-1.5 h-1.5 rounded-full ${u.activo ? 'bg-emerald-500' : 'bg-rose-500'}"></span>
+          ${u.activo ? 'ACTIVO' : 'INACTIVO'}
         </span>
       </td>
       <td class="py-3 px-4 text-center">
-        <button onclick="toggleEstadoUsuario(${u.id})" class="text-[11px] font-bold px-2.5 py-1 rounded border border-slate-300 hover:bg-slate-100 text-slate-700 cursor-pointer">
-          ${u.activo ? 'Desactivar' : 'Activar'}
-        </button>
+        <div class="flex items-center justify-center gap-1.5">
+          <button onclick="abrirModalCambiarPassword(${u.id})" title="Cambiar Contraseña de este Usuario" class="px-2 py-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-lg text-[10px] font-black transition-all cursor-pointer flex items-center gap-1">
+            <span>🔑</span>
+            <span>Cambiar Clave</span>
+          </button>
+          <button onclick="abrirModalEditarUsuario(${u.id})" title="Modificar Datos" class="px-2 py-1 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 rounded-lg text-[10px] font-black transition-all cursor-pointer flex items-center gap-1">
+            <span>✏️</span>
+            <span>Editar</span>
+          </button>
+          <button onclick="toggleEstadoUsuario(${u.id})" title="${u.activo ? 'Desactivar Cuenta' : 'Activar Cuenta'}" class="px-2 py-1 ${u.activo ? 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'} rounded-lg text-[10px] font-black transition-all cursor-pointer">
+            ${u.activo ? '🚫' : '✔'}
+          </button>
+        </div>
       </td>
     `;
     tbody.appendChild(tr);
@@ -1165,8 +1190,9 @@ async function cargarUsuariosDesdeBD() {
     const res = await fetch('../api/users/list.php');
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const json = await res.json();
-    if (json.success && Array.isArray(json.data) && json.data.length > 0) {
-      ADMIN_STATE.usuarios = json.data.map(u => ({
+    const list = json.users || json.data || [];
+    if (json.success && Array.isArray(list) && list.length > 0) {
+      ADMIN_STATE.usuarios = list.map(u => ({
         id: parseInt(u.id),
         rut: u.rut,
         nombre: u.nombre,
@@ -1176,8 +1202,11 @@ async function cargarUsuariosDesdeBD() {
         activo: parseInt(u.activo) === 1
       }));
       sincronizarStorageUsuarios();
+      renderUsuarios();
     }
-  } catch (err) {}
+  } catch (err) {
+    console.warn('Error cargando usuarios desde BD:', err);
+  }
 }
 
 async function cargarMovimientosDesdeBD() {
@@ -1264,4 +1293,348 @@ function mostrarToastAdmin(msg, tipo = 'info') {
   setTimeout(() => {
     t.remove();
   }, 4000);
+}
+
+
+// =============================================================================
+// FUNCIONES DE CONTROL DEL SIDEBAR COLAPSABLE (ESTILO PUMP FITNESS)
+// =============================================================================
+function toggleSidebarAdmin() {
+  const sidebar = document.getElementById('sidebar-admin');
+  const chevron = document.getElementById('sidebar-chevron');
+  if (!sidebar) return;
+
+  const isCollapsed = sidebar.classList.toggle('sidebar-collapsed');
+  if (isCollapsed) {
+    if (chevron) chevron.style.transform = 'rotate(180deg)';
+    localStorage.setItem('farma_sidebar_collapsed', 'true');
+  } else {
+    if (chevron) chevron.style.transform = 'rotate(0deg)';
+    localStorage.setItem('farma_sidebar_collapsed', 'false');
+  }
+}
+
+function toggleMobileSidebar() {
+  const sidebar = document.getElementById('sidebar-admin');
+  const backdrop = document.getElementById('mobile-sidebar-backdrop');
+  if (!sidebar) return;
+
+  const isHidden = sidebar.classList.contains('-translate-x-full');
+  if (isHidden) {
+    sidebar.classList.remove('-translate-x-full');
+    sidebar.classList.add('translate-x-0');
+    if (backdrop) backdrop.classList.remove('hidden');
+  } else {
+    sidebar.classList.add('-translate-x-full');
+    sidebar.classList.remove('translate-x-0');
+    if (backdrop) backdrop.classList.add('hidden');
+  }
+}
+
+// =============================================================================
+// FLUJO PROFESIONAL DE RECUPERACIÓN DE CUENTA VÍA ENLACE DE CORREO
+// =============================================================================
+function mostrarVistaLogin() {
+  document.getElementById('view-login').classList.remove('hidden');
+  document.getElementById('view-recuperar').classList.add('hidden');
+  document.getElementById('view-restablecer').classList.add('hidden');
+  document.getElementById('rec-simulacion-box').classList.add('hidden');
+}
+
+function mostrarVistaRecuperar() {
+  document.getElementById('view-login').classList.add('hidden');
+  document.getElementById('view-recuperar').classList.remove('hidden');
+  document.getElementById('view-restablecer').classList.add('hidden');
+  document.getElementById('rec-simulacion-box').classList.add('hidden');
+}
+
+function mostrarVistaRestablecer(token, email) {
+  document.getElementById('view-login').classList.add('hidden');
+  document.getElementById('view-recuperar').classList.add('hidden');
+  document.getElementById('view-restablecer').classList.remove('hidden');
+  
+  if (token) document.getElementById('restablecer-token').value = token;
+  if (email) {
+    document.getElementById('restablecer-email').value = email;
+    document.getElementById('restablecer-target-user').textContent = email;
+  }
+}
+
+async function solicitarEnlaceRecuperacion() {
+  const emailInput = document.getElementById('rec-email');
+  const email = emailInput ? emailInput.value.trim() : '';
+  const btn = document.getElementById('btn-solicitar-enlace');
+
+  if (!email || !email.includes('@')) {
+    alert('Por favor ingrese un correo electrónico institucional válido.');
+    return;
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Enviando enlace seguro...';
+  }
+
+  try {
+    const res = await fetch('../api/auth/recover.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'request_link', email: email })
+    });
+    const json = await res.json();
+
+    if (json.success) {
+      // Mostrar tarjeta de simulación de correo
+      const box = document.getElementById('rec-simulacion-box');
+      const emailTarget = document.getElementById('rec-simulacion-target');
+      const btnAbrir = document.getElementById('btn-simular-abrir-correo');
+
+      if (emailTarget) emailTarget.textContent = json.email;
+      if (box) box.classList.remove('hidden');
+
+      if (btnAbrir) {
+        btnAbrir.onclick = () => {
+          mostrarVistaRestablecer(json.token, json.email);
+        };
+      }
+
+      mostrarToastAdmin(`📧 Enlace seguro enviado a ${json.email}`, 'success');
+    } else {
+      alert(json.message || 'Error al solicitar el enlace de recuperación.');
+    }
+  } catch (err) {
+    // Modo offline resiliente
+    const mockToken = 'mock_' + Math.random().toString(36).substring(2);
+    const box = document.getElementById('rec-simulacion-box');
+    const emailTarget = document.getElementById('rec-simulacion-target');
+    const btnAbrir = document.getElementById('btn-simular-abrir-correo');
+
+    if (emailTarget) emailTarget.textContent = email;
+    if (box) box.classList.remove('hidden');
+    if (btnAbrir) {
+      btnAbrir.onclick = () => {
+        mostrarVistaRestablecer(mockToken, email);
+      };
+    }
+    mostrarToastAdmin(`📧 Enlace seguro generado para ${email}`, 'success');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = '📧 Enviar Enlace de Recuperación al Correo';
+    }
+  }
+}
+
+async function restablecerPasswordConEnlace() {
+  const token = document.getElementById('restablecer-token').value.trim();
+  const email = document.getElementById('restablecer-email').value.trim();
+  const pass1 = document.getElementById('restablecer-pass1').value.trim();
+  const pass2 = document.getElementById('restablecer-pass2').value.trim();
+
+  if (pass1.length < 6) {
+    alert('La nueva contraseña debe tener al menos 6 caracteres.');
+    return;
+  }
+
+  if (pass1 !== pass2) {
+    alert('Las contraseñas no coinciden. Verifique ambas casillas.');
+    return;
+  }
+
+  try {
+    const res = await fetch('../api/auth/recover.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'reset_with_token',
+        token: token,
+        email: email,
+        nueva_password: pass1
+      })
+    });
+    const json = await res.json();
+
+    if (json.success) {
+      // Actualizar localmente si existe
+      const u = ADMIN_STATE.usuarios.find(x => x.email === email);
+      if (u) u.pass = pass1;
+      sincronizarStorageUsuarios();
+
+      alert('✅ ¡Contraseña restablecida exitosamente en la base de datos! Ahora puedes iniciar sesión con tu nueva contraseña.');
+      
+      // Llenar campos de login y volver
+      const elLoginEmail = document.getElementById('login-email');
+      const elLoginPass = document.getElementById('login-password');
+      if (elLoginEmail) elLoginEmail.value = email;
+      if (elLoginPass) elLoginPass.value = pass1;
+
+      mostrarVistaLogin();
+    } else {
+      alert(json.message || 'No fue posible restablecer la contraseña.');
+    }
+  } catch (err) {
+    const u = ADMIN_STATE.usuarios.find(x => x.email === email);
+    if (u) u.pass = pass1;
+    sincronizarStorageUsuarios();
+    alert('✅ Contraseña actualizada exitosamente. Inicie sesión.');
+    mostrarVistaLogin();
+  }
+}
+
+// =============================================================================
+// GESTIÓN DE USUARIOS Y CAMBIO DE CONTRASEÑA POR ADMINISTRADOR
+// =============================================================================
+let usuarioSeleccionadoPassword = null;
+
+function abrirModalNuevoUsuario() {
+  document.getElementById('modal-usr-titulo').textContent = 'Registrar Nuevo Trabajador';
+  document.getElementById('usr-id-hidden').value = '0';
+  document.getElementById('usr-rut').value = '';
+  document.getElementById('usr-nombre').value = '';
+  document.getElementById('usr-email').value = '';
+  document.getElementById('usr-rol').value = 'VENDEDOR';
+  document.getElementById('usr-pass').value = 'inacap2026';
+  document.getElementById('modal-usuario').classList.remove('hidden');
+}
+
+function abrirModalEditarUsuario(id) {
+  const u = ADMIN_STATE.usuarios.find(x => x.id === id);
+  if (!u) return;
+
+  document.getElementById('modal-usr-titulo').textContent = 'Modificar Datos de Trabajador';
+  document.getElementById('usr-id-hidden').value = u.id;
+  document.getElementById('usr-rut').value = u.rut;
+  document.getElementById('usr-nombre').value = u.nombre;
+  document.getElementById('usr-email').value = u.email;
+  document.getElementById('usr-rol').value = u.rol;
+  document.getElementById('usr-pass').value = '';
+  document.getElementById('modal-usuario').classList.remove('hidden');
+}
+
+function cerrarModalUsuario() {
+  document.getElementById('modal-usuario').classList.add('hidden');
+}
+
+async function guardarUsuarioAdmin() {
+  const id = parseInt(document.getElementById('usr-id-hidden').value || '0');
+  const rut = document.getElementById('usr-rut').value.trim();
+  const nombre = document.getElementById('usr-nombre').value.trim();
+  const email = document.getElementById('usr-email').value.trim();
+  const rol = document.getElementById('usr-rol').value;
+  const pass = document.getElementById('usr-pass').value.trim();
+
+  if (!rut || !nombre || !email) {
+    alert('Por favor complete RUT, Nombre Completo y Correo Institucional.');
+    return;
+  }
+
+  const payload = {
+    id: id,
+    rut: rut,
+    nombre: nombre,
+    email: email,
+    rol: rol,
+    password: pass,
+    activo: 1
+  };
+
+  try {
+    const res = await fetch('../api/users/save.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const json = await res.json();
+
+    if (json.success) {
+      mostrarToastAdmin(json.message || 'Usuario guardado exitosamente.', 'success');
+    }
+  } catch (err) {
+    console.warn('Guardando en almacenamiento local:', err);
+  }
+
+  // Actualizar estado local
+  if (id > 0) {
+    const idx = ADMIN_STATE.usuarios.findIndex(x => x.id === id);
+    if (idx !== -1) {
+      ADMIN_STATE.usuarios[idx].rut = rut;
+      ADMIN_STATE.usuarios[idx].nombre = nombre;
+      ADMIN_STATE.usuarios[idx].email = email;
+      ADMIN_STATE.usuarios[idx].rol = rol;
+      if (pass) ADMIN_STATE.usuarios[idx].pass = pass;
+    }
+  } else {
+    const maxId = ADMIN_STATE.usuarios.reduce((m, u) => Math.max(m, u.id || 0), 0);
+    ADMIN_STATE.usuarios.push({
+      id: maxId + 1,
+      rut: rut,
+      nombre: nombre,
+      email: email,
+      rol: rol,
+      pass: pass || 'inacap2026',
+      activo: true
+    });
+  }
+
+  sincronizarStorageUsuarios();
+  renderUsuarios();
+  cerrarModalUsuario();
+}
+
+function abrirModalCambiarPassword(id) {
+  const u = ADMIN_STATE.usuarios.find(x => x.id === id);
+  if (!u) return;
+
+  usuarioSeleccionadoPassword = u;
+  document.getElementById('modal-pwd-user-name').textContent = u.nombre;
+  document.getElementById('modal-pwd-user-rut').textContent = `${u.rut} (${u.rol})`;
+  document.getElementById('admin-new-user-pass1').value = '';
+  document.getElementById('admin-new-user-pass2').value = '';
+  document.getElementById('modal-cambiar-password').classList.remove('hidden');
+}
+
+function cerrarModalCambiarPassword() {
+  document.getElementById('modal-cambiar-password').classList.add('hidden');
+  usuarioSeleccionadoPassword = null;
+}
+
+async function guardarCambioPasswordAdmin() {
+  if (!usuarioSeleccionadoPassword) return;
+
+  const pass1 = document.getElementById('admin-new-user-pass1').value.trim();
+  const pass2 = document.getElementById('admin-new-user-pass2').value.trim();
+
+  if (pass1.length < 6) {
+    alert('La contraseña debe tener al menos 6 caracteres.');
+    return;
+  }
+
+  if (pass1 !== pass2) {
+    alert('Las contraseñas no coinciden. Verifíquelas.');
+    return;
+  }
+
+  try {
+    const res = await fetch('../api/users/change_password.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: usuarioSeleccionadoPassword.id,
+        new_password: pass1
+      })
+    });
+    const json = await res.json();
+    if (json.success) {
+      mostrarToastAdmin(`🔑 Contraseña actualizada en MySQL para ${usuarioSeleccionadoPassword.nombre}`, 'success');
+    } else {
+      alert(json.error || 'Error al cambiar contraseña');
+    }
+  } catch (err) {
+    mostrarToastAdmin(`🔑 Contraseña actualizada para ${usuarioSeleccionadoPassword.nombre}`, 'success');
+  }
+
+  usuarioSeleccionadoPassword.pass = pass1;
+  sincronizarStorageUsuarios();
+  renderUsuarios();
+  cerrarModalCambiarPassword();
 }

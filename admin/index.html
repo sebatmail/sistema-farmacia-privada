@@ -788,7 +788,86 @@
         </div>
 
         <div id="turnos-cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <!-- Se puebla dinámicamente con botones de Google Calendar y Apple Calendar -->
+          <!-- Turno 1: Vicente Flores -->
+          <div class="glass-card p-5 rounded-2xl flex flex-col justify-between space-y-4 border border-slate-200/90 hover:border-indigo-300">
+            <div class="space-y-2">
+              <div class="flex justify-between items-start gap-2">
+                <div>
+                  <span class="text-[11px] font-bold text-indigo-600 block">Hoy (Martes 24 Nov)</span>
+                  <h4 class="text-sm font-extrabold text-slate-900">Turno Mañana - Atención Mostrador & POS</h4>
+                </div>
+                <div><span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 inline-flex items-center gap-1">🟢 Presente (08:28 hrs)</span></div>
+              </div>
+              <div class="space-y-1 text-xs text-slate-600">
+                <div class="flex items-center gap-1.5"><span class="font-bold text-slate-800">Trabajador:</span> Vicente Flores <span class="text-[10px] font-mono text-slate-400 font-bold">(VENDEDOR)</span></div>
+                <div class="flex items-center gap-1.5 font-mono text-slate-700 font-semibold"><span>⏰</span> 08:30 - 16:30 hrs</div>
+                <div class="flex items-center gap-1.5 text-slate-500 text-[11px]"><span>📍</span> FarmaRed Santiago Centro - Caja 2</div>
+                <p class="text-[11px] text-slate-500 pt-1 border-t border-slate-100">Dispensación ambulatoria, cuadratura de caja y atención de clientes.</p>
+              </div>
+            </div>
+            <div class="pt-3 border-t border-slate-100 flex flex-wrap gap-2">
+              <button onclick="abrirGoogleCalendar(1)" class="btn-calendar-google flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer">
+                <svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="#4285F4" d="M19.5 3h-15A1.5 1.5 0 0 0 3 4.5v15A1.5 1.5 0 0 0 4.5 21h15a1.5 1.5 0 0 0 1.5-1.5v-15A1.5 1.5 0 0 0 19.5 3z"/><path fill="#fff" d="M16 11h-3V8h-2v3H8v2h3v3h2v-3h3z"/></svg> Google Calendar
+              </button>
+              <button onclick="descargarAppleCalendarIcs(1)" class="btn-calendar-apple flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer">
+                🍏 Apple Calendar (.ics)
+              </button>
+            </div>
+          </div>
+
+          <!-- Turno 2: Sebastián Torres -->
+          <div class="glass-card p-5 rounded-2xl flex flex-col justify-between space-y-4 border border-slate-200/90 hover:border-indigo-300">
+            <div class="space-y-2">
+              <div class="flex justify-between items-start gap-2">
+                <div>
+                  <span class="text-[11px] font-bold text-indigo-600 block">Hoy (Martes 24 Nov)</span>
+                  <h4 class="text-sm font-extrabold text-slate-900">Regencia Químico Farmacéutica & Libro ISP</h4>
+                </div>
+                <div><span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 inline-flex items-center gap-1">🟢 Presente (08:55 hrs)</span></div>
+              </div>
+              <div class="space-y-1 text-xs text-slate-600">
+                <div class="flex items-center gap-1.5"><span class="font-bold text-slate-800">Trabajador:</span> Sebastián Torres <span class="text-[10px] font-mono text-slate-400 font-bold">(QUIMICO_REGENTE)</span></div>
+                <div class="flex items-center gap-1.5 font-mono text-slate-700 font-semibold"><span>⏰</span> 09:00 - 18:00 hrs</div>
+                <div class="flex items-center gap-1.5 text-slate-500 text-[11px]"><span>📍</span> FarmaRed Santiago Centro - Despacho Psicotrópicos</div>
+                <p class="text-[11px] text-slate-500 pt-1 border-t border-slate-100">Custodia de psicotrópicos, farmacovigilancia y validación de recetas retenidas.</p>
+              </div>
+            </div>
+            <div class="pt-3 border-t border-slate-100 flex flex-wrap gap-2">
+              <button onclick="abrirGoogleCalendar(2)" class="btn-calendar-google flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer">
+                <svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="#4285F4" d="M19.5 3h-15A1.5 1.5 0 0 0 3 4.5v15A1.5 1.5 0 0 0 4.5 21h15a1.5 1.5 0 0 0 1.5-1.5v-15A1.5 1.5 0 0 0 19.5 3z"/><path fill="#fff" d="M16 11h-3V8h-2v3H8v2h3v3h2v-3h3z"/></svg> Google Calendar
+              </button>
+              <button onclick="descargarAppleCalendarIcs(2)" class="btn-calendar-apple flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer">
+                🍏 Apple Calendar (.ics)
+              </button>
+            </div>
+          </div>
+
+          <!-- Turno 3: Bodega FEFO -->
+          <div class="glass-card p-5 rounded-2xl flex flex-col justify-between space-y-4 border border-slate-200/90 hover:border-indigo-300">
+            <div class="space-y-2">
+              <div class="flex justify-between items-start gap-2">
+                <div>
+                  <span class="text-[11px] font-bold text-indigo-600 block">Hoy (Martes 24 Nov)</span>
+                  <h4 class="text-sm font-extrabold text-slate-900">Recepción Central & Clasificación FEFO</h4>
+                </div>
+                <div><span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 inline-flex items-center gap-1">🟢 Presente (07:58 hrs)</span></div>
+              </div>
+              <div class="space-y-1 text-xs text-slate-600">
+                <div class="flex items-center gap-1.5"><span class="font-bold text-slate-800">Trabajador:</span> Operador de Bodega <span class="text-[10px] font-mono text-slate-400 font-bold">(BODEGUERO)</span></div>
+                <div class="flex items-center gap-1.5 font-mono text-slate-700 font-semibold"><span>⏰</span> 08:00 - 16:00 hrs</div>
+                <div class="flex items-center gap-1.5 text-slate-500 text-[11px]"><span>📍</span> FarmaRed Santiago Centro - Bodega Nivel 1</div>
+                <p class="text-[11px] text-slate-500 pt-1 border-t border-slate-100">Recepción de órdenes de compra, control de cadena de frío y reposición a vitrina.</p>
+              </div>
+            </div>
+            <div class="pt-3 border-t border-slate-100 flex flex-wrap gap-2">
+              <button onclick="abrirGoogleCalendar(3)" class="btn-calendar-google flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer">
+                <svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="#4285F4" d="M19.5 3h-15A1.5 1.5 0 0 0 3 4.5v15A1.5 1.5 0 0 0 4.5 21h15a1.5 1.5 0 0 0 1.5-1.5v-15A1.5 1.5 0 0 0 19.5 3z"/><path fill="#fff" d="M16 11h-3V8h-2v3H8v2h3v3h2v-3h3z"/></svg> Google Calendar
+              </button>
+              <button onclick="descargarAppleCalendarIcs(3)" class="btn-calendar-apple flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer">
+                🍏 Apple Calendar (.ics)
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 

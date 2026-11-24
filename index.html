@@ -660,6 +660,154 @@
         <!-- Renderizado dinámico vía app.js -->
       </div>
 
+    
+      <!-- ================================================================= -->
+      <!-- SECCIÓN INTEGRADA: HORARIOS Y TURNOS DEL PERSONAL (GOOGLE & APPLE) -->
+      <!-- ================================================================= -->
+      <div class="mt-8 space-y-6">
+        
+        <!-- Banner de Encabezado Turnos -->
+        <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-6 sm:p-7 rounded-3xl shadow-sm border border-slate-800 flex flex-wrap justify-between items-center gap-4">
+          <div>
+            <span class="text-xs text-indigo-400 font-bold uppercase tracking-wider block mb-1">
+              ● GESTIÓN DE PERSONAL & TURNOS ROTATIVOS (UNIDAD 3)
+            </span>
+            <h2 class="text-xl sm:text-2xl font-black tracking-tight">Horarios y Turnos del Personal Farmacéutico</h2>
+            <p class="text-xs text-slate-300 mt-1 max-w-2xl">
+              Turnos oficiales de los trabajadores. Sincroniza directamente con <strong>Google Calendar</strong> o descarga el archivo <strong>.ics para Apple Calendar (iPhone/Mac)</strong>.
+            </p>
+          </div>
+
+          <div class="flex flex-wrap gap-2">
+            <button onclick="descargarTodosTurnosIcs()" class="px-4 py-2.5 bg-white hover:bg-slate-100 text-slate-900 font-extrabold rounded-xl text-xs flex items-center gap-2 shadow-sm transition-all cursor-pointer">
+              🍏 <span>Descargar Todo a Apple Calendar (.ics)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Reloj Control Inmediato -->
+        <div class="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200 shadow-xs flex flex-wrap justify-between items-center gap-4">
+          <div class="flex items-center gap-3.5">
+            <div class="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-200 text-indigo-700 flex items-center justify-center text-xl font-bold">
+              ⏰
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span id="reloj-control-hora-dash" class="text-xl font-black font-mono text-slate-900">08:28:00 hrs</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                  TURNO EN CURSO
+                </span>
+              </div>
+              <p class="text-xs text-slate-500 mt-0.5">
+                Operador en Caja: <strong class="text-slate-800">Vicente Flores</strong> (Turno Mañana 08:30 - 16:30 hrs)
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="marcarEntradaTrabajador()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl text-xs flex items-center gap-1.5 shadow-sm transition-all cursor-pointer">
+              <span>⏱️ Marcar Entrada</span>
+            </button>
+            <button onclick="marcarSalidaTrabajador()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold rounded-xl text-xs flex items-center gap-1.5 border border-slate-300 transition-all cursor-pointer">
+              <span>🚪 Marcar Salida</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Tarjetas Pre-Renderizadas de Turnos (100% Visibles Siempre) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          
+          <!-- Turno 1: Vicente Flores -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between hover:shadow-md transition-all">
+            <div>
+              <div class="flex justify-between items-start gap-2 mb-2">
+                <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded border bg-indigo-50 text-indigo-700 border-indigo-200">
+                  Vicente Flores (VENDEDOR)
+                </span>
+                <span class="text-[10px] font-extrabold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                  ✔ EN TURNO
+                </span>
+              </div>
+              <h4 class="font-extrabold text-sm text-slate-900 mt-1">Turno Mañana - Atención POS y Dispensación</h4>
+              <p class="text-xs text-indigo-600 font-bold mt-1">🗓️ Hoy (Martes 24 Nov) • ⏰ 08:30 a 16:30 hrs</p>
+              <p class="text-[11px] text-slate-500 mt-2">Dispensación de recetas médicas, cobranza POS y verificación de stock en vitrina.</p>
+              <p class="text-[11px] text-slate-400 mt-1">📍 FarmaRed Santiago Centro - Alameda #1020 (Caja 02)</p>
+            </div>
+            <div class="pt-4 mt-4 border-t border-slate-100 flex flex-col gap-2">
+              <button onclick="agregarTurnoGoogleCalendar(1)" class="w-full py-2 bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs">
+                <svg class="w-4 h-4 text-red-500" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 002 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11zM7 11h5v5H7z"/>
+                </svg>
+                <span>Agregar a Google Calendar</span>
+              </button>
+              <button onclick="descargarTurnoIcs(1)" class="w-full py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs">
+                <span>🍏 Descargar para Apple Calendar (.ics)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Turno 2: Sebastián Torres (QF) -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between hover:shadow-md transition-all">
+            <div>
+              <div class="flex justify-between items-start gap-2 mb-2">
+                <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded border bg-emerald-50 text-emerald-700 border-emerald-200">
+                  Sebastián Torres (QUIMICO_FARMACEUTICO)
+                </span>
+                <span class="text-[10px] font-extrabold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                  ✔ EN TURNO
+                </span>
+              </div>
+              <h4 class="font-extrabold text-sm text-slate-900 mt-1">Regencia Químico Farmacéutica y Controlados ISP</h4>
+              <p class="text-xs text-indigo-600 font-bold mt-1">🗓️ Hoy (Martes 24 Nov) • ⏰ 09:00 a 18:00 hrs</p>
+              <p class="text-[11px] text-slate-500 mt-2">Supervisión de recetas de psicotrópicos, firma digital libro ISP y regencia sanitaria legal.</p>
+              <p class="text-[11px] text-slate-400 mt-1">📍 FarmaRed Santiago Centro - Despacho Psicotrópicos</p>
+            </div>
+            <div class="pt-4 mt-4 border-t border-slate-100 flex flex-col gap-2">
+              <button onclick="agregarTurnoGoogleCalendar(2)" class="w-full py-2 bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs">
+                <svg class="w-4 h-4 text-red-500" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 002 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11zM7 11h5v5H7z"/>
+                </svg>
+                <span>Agregar a Google Calendar</span>
+              </button>
+              <button onclick="descargarTurnoIcs(2)" class="w-full py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs">
+                <span>🍏 Descargar para Apple Calendar (.ics)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Turno 3: Bodega FEFO -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between hover:shadow-md transition-all">
+            <div>
+              <div class="flex justify-between items-start gap-2 mb-2">
+                <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded border bg-amber-50 text-amber-700 border-amber-200">
+                  Operador Bodega (BODEGUERO)
+                </span>
+                <span class="text-[10px] font-extrabold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                  ✔ EN TURNO
+                </span>
+              </div>
+              <h4 class="font-extrabold text-sm text-slate-900 mt-1">Recepción de Laboratorios y Clasificación FEFO</h4>
+              <p class="text-xs text-indigo-600 font-bold mt-1">🗓️ Hoy (Martes 24 Nov) • ⏰ 08:00 a 16:00 hrs</p>
+              <p class="text-[11px] text-slate-500 mt-2">Recepción de despachos de Cenabast y laboratorios, rotulación FEFO y reposición.</p>
+              <p class="text-[11px] text-slate-400 mt-1">📍 FarmaRed Santiago Centro - Bodega Central Subterráneo</p>
+            </div>
+            <div class="pt-4 mt-4 border-t border-slate-100 flex flex-col gap-2">
+              <button onclick="agregarTurnoGoogleCalendar(3)" class="w-full py-2 bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs">
+                <svg class="w-4 h-4 text-red-500" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 002 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11zM7 11h5v5H7z"/>
+                </svg>
+                <span>Agregar a Google Calendar</span>
+              </button>
+              <button onclick="descargarTurnoIcs(3)" class="w-full py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs">
+                <span>🍏 Descargar para Apple Calendar (.ics)</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
     </section>
 
   </main>

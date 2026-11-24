@@ -6,6 +6,9 @@
 -- ====================================================================
 
 SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS `recuperaciones_password`;
+DROP TABLE IF EXISTS `turnos_horarios`;
+DROP TABLE IF EXISTS `auditoria_usuarios`;
 DROP TABLE IF EXISTS `caja_turnos`;
 DROP TABLE IF EXISTS `libro_controlados_isp`;
 DROP TABLE IF EXISTS `venta_detalles`;
@@ -180,6 +183,50 @@ CREATE TABLE `transferencias_internas` (
   FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- 11. TABLA: auditoria_usuarios (Historial y Monitoreo de Acciones de Usuario)
+CREATE TABLE `auditoria_usuarios` (
+  `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `usuario_id` INT UNSIGNED NOT NULL,
+  `nombre_usuario` VARCHAR(100) NOT NULL,
+  `rol` VARCHAR(50) NOT NULL,
+  `accion` VARCHAR(100) NOT NULL,
+  `modulo` VARCHAR(50) NOT NULL,
+  `detalles` TEXT NOT NULL,
+  `ip_origen` VARCHAR(45) DEFAULT '127.0.0.1',
+  `user_agent` VARCHAR(255) DEFAULT 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 12. TABLA: turnos_horarios (Planificación y Sincronización Google/Apple Calendar)
+CREATE TABLE `turnos_horarios` (
+  `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `usuario_id` INT UNSIGNED NOT NULL,
+  `titulo` VARCHAR(100) NOT NULL,
+  `tipo_turno` ENUM('MANANA', 'TARDE', 'NOCHE_GUARDIA', 'QUIMICO_REGENTE') NOT NULL DEFAULT 'MANANA',
+  `fecha_inicio` DATETIME NOT NULL,
+  `fecha_fin` DATETIME NOT NULL,
+  `ubicacion` VARCHAR(150) DEFAULT 'FarmaRed Sucursal Santiago Centro - Alameda #1020',
+  `descripcion` VARCHAR(255) DEFAULT 'Turno presencial farmacia con atencion de mostrador y reposicion',
+  `estado_asistencia` ENUM('PROGRAMADO', 'PRESENTE', 'SALIDA_REGISTRADA', 'AUSENTE') DEFAULT 'PROGRAMADO',
+  `hora_marcacion_entrada` DATETIME NULL,
+  `hora_marcacion_salida` DATETIME NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 13. TABLA: recuperaciones_password (Recuperación Segura de Cuentas)
+CREATE TABLE `recuperaciones_password` (
+  `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `usuario_id` INT UNSIGNED NOT NULL,
+  `email` VARCHAR(100) NOT NULL,
+  `token_codigo` VARCHAR(10) NOT NULL,
+  `usado` TINYINT(1) DEFAULT 0,
+  `expira_at` DATETIME NOT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- SEEDERS (DATOS DE PRUEBA REALES)
 INSERT INTO `usuarios` (`id`, `rut`, `nombre`, `email`, `password`, `rol`, `activo`) VALUES
 (1, '11.111.111-1', 'Administrador General', 'admin@farmacia.cl', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'ADMIN', 1),
@@ -229,3 +276,21 @@ INSERT INTO `caja_turnos` (`id`, `usuario_id`, `fondo_inicial`, `total_esperado`
 
 INSERT INTO `libro_controlados_isp` (`id`, `fecha`, `producto_id`, `lote_id`, `receta_id`, `tipo_movimiento`, `cantidad`, `saldo_resultante`, `rut_paciente`, `nombre_paciente`, `rut_medico`, `nombre_medico`, `rnpi_medico`, `folio_receta`, `firmado_por_qf`, `hash_sha256`, `hash_anterior`) VALUES
 (1, NOW() - INTERVAL 1 DAY, 4, 7, 2, 'EGRESO', 1, 47, '12.345.678-9', 'Juan Alberto Pérez Soto', '8.765.432-1', 'Dr. Roberto Muñoz Carrasco', 'RNPI-45892', 'RET-2026-088', 'Dr. Andrés López (Q.F.)', 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', '0000000000000000000000000000000000000000000000000000000000000000');
+
+-- SEEDERS AUDITORÍA DE USUARIOS
+INSERT INTO `auditoria_usuarios` (`id`, `usuario_id`, `nombre_usuario`, `rol`, `accion`, `modulo`, `detalles`, `ip_origen`, `created_at`) VALUES
+(1, 1, 'Administrador General', 'ADMIN', 'INICIO_SESION', 'AUTENTICACION', 'Inicio de sesión exitoso desde consola de administración cPanel', '192.168.1.45', NOW() - INTERVAL 3 HOUR),
+(2, 3, 'Vicente Flores', 'VENDEDOR', 'VENTA_DTE', 'POS_VENTAS', 'Emisión de Boleta Electrónica Folio #4829 por $6.940 (Convenio Isapre Banmédica)', '192.168.1.102', NOW() - INTERVAL 2 HOUR),
+(3, 2, 'Sebastián Torres', 'QUIMICO_FARMACEUTICO', 'FIRMA_RECETA_ISP', 'CONTROLADOS', 'Validación y retención de Receta Médica Folio #REC-2026-9041 (Clonazepam 2 mg)', '192.168.1.103', NOW() - INTERVAL 90 MINUTE),
+(4, 4, 'Operador de Bodega', 'BODEGUERO', 'TRASLADO_VITRINA', 'INVENTARIO', 'Traspaso de 10 unidades de Amoxicilina 850 mg (Lote LT-AMX-2026-CRIT) a Mostrador', '192.168.1.104', NOW() - INTERVAL 45 MINUTE),
+(5, 1, 'Administrador General', 'ADMIN', 'RECEPCION_LOTE', 'BODEGA_FEFO', 'Ingreso de nuevo lote LT-AND-2027-B de Paracetamol 500 mg con 50 unidades', '192.168.1.45', NOW() - INTERVAL 20 MINUTE),
+(6, 3, 'Vicente Flores', 'VENDEDOR', 'MARCACION_ENTRADA', 'RELOJ_CONTROL', 'Marcación de horario de entrada Turno Mañana (08:28 hrs) verificada', '192.168.1.102', NOW() - INTERVAL 4 HOUR);
+
+-- SEEDERS TURNOS Y HORARIOS (SINCRONIZACIÓN GOOGLE Y APPLE CALENDAR)
+INSERT INTO `turnos_horarios` (`id`, `usuario_id`, `titulo`, `tipo_turno`, `fecha_inicio`, `fecha_fin`, `ubicacion`, `descripcion`, `estado_asistencia`, `hora_marcacion_entrada`) VALUES
+(1, 3, 'Turno Mañana - Vicente Flores', 'MANANA', DATE_ADD(CURDATE(), INTERVAL 8 HOUR + INTERVAL 30 MINUTE), DATE_ADD(CURDATE(), INTERVAL 16 HOUR + INTERVAL 30 MINUTE), 'FarmaRed Santiago Centro - Caja 2', 'Atención en mesón y ventas POS', 'PRESENTE', DATE_ADD(CURDATE(), INTERVAL 8 HOUR + INTERVAL 28 MINUTE)),
+(2, 2, 'Regencia Químico Farmacéutica - Sebastián Torres', 'QUIMICO_REGENTE', DATE_ADD(CURDATE(), INTERVAL 9 HOUR), DATE_ADD(CURDATE(), INTERVAL 18 HOUR), 'FarmaRed Santiago Centro - Despacho Controlados', 'Supervisión de libro ISP y dispensación ética', 'PRESENTE', DATE_ADD(CURDATE(), INTERVAL 8 HOUR + INTERVAL 55 MINUTE)),
+(3, 4, 'Recepción y Control FEFO - Bodega Central', 'MANANA', DATE_ADD(CURDATE(), INTERVAL 8 HOUR), DATE_ADD(CURDATE(), INTERVAL 16 HOUR), 'FarmaRed Santiago Centro - Bodega Nivel 1', 'Recepción de camiones de laboratorios y reposición', 'PRESENTE', DATE_ADD(CURDATE(), INTERVAL 7 HOUR + INTERVAL 58 MINUTE)),
+(4, 3, 'Turno Mañana - Vicente Flores', 'MANANA', DATE_ADD(DATE_ADD(CURDATE(), INTERVAL 1 DAY), INTERVAL 8 HOUR + INTERVAL 30 MINUTE), DATE_ADD(DATE_ADD(CURDATE(), INTERVAL 1 DAY), INTERVAL 16 HOUR + INTERVAL 30 MINUTE), 'FarmaRed Santiago Centro - Caja 2', 'Atención en mesón y ventas POS', 'PROGRAMADO', NULL),
+(5, 2, 'Regencia Químico Farmacéutica - Sebastián Torres', 'QUIMICO_REGENTE', DATE_ADD(DATE_ADD(CURDATE(), INTERVAL 1 DAY), INTERVAL 9 HOUR), DATE_ADD(DATE_ADD(CURDATE(), INTERVAL 1 DAY), INTERVAL 18 HOUR), 'FarmaRed Santiago Centro - Despacho Controlados', 'Supervisión de libro ISP y dispensación ética', 'PROGRAMADO', NULL),
+(6, 1, 'Auditoría y Cierre de Mes - Admin', 'TARDE', DATE_ADD(CURDATE(), INTERVAL 14 HOUR), DATE_ADD(CURDATE(), INTERVAL 22 HOUR), 'FarmaRed Santiago Centro - Oficina Admin', 'Cierre contable DTE, arqueo de caja y revisión ISP', 'PROGRAMADO', NULL);

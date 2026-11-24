@@ -1,4 +1,9 @@
 <?php
+/**
+ * API ENDPOINT: PROCESAMIENTO ATÓMICO DE VENTA POS Y DESPACHO FEFO
+ * FarmaRed Chile - Facturación Electrónica (DTE) y Trazabilidad Sanitaria ISP
+ */
+
 require_once __DIR__ . '/../config/database.php';
 
 $data = getJsonInput();
@@ -38,16 +43,29 @@ try {
 
         if (!$prod) {
             $db->rollBack();
-            jsonResponse(['success' => false, 'message' => "Producto ID {$prodId} no existe."], 404);
+            jsonResponse(['success' => false, 'message' => "Producto ID {$prodId} no existe en el catálogo."], 404);
         }
 
-        $stmtL = $db->prepare("SELECT * FROM lotes WHERE producto_id = ? AND stock_vitrina >= ? ORDER BY fecha_vencimiento ASC LIMIT 1 FOR UPDATE");
+        // Buscar lote FEFO con stock suficiente en vitrina o combinado con bodega
+        $stmtL = $db->prepare("SELECT * FROM lotes WHERE producto_id = ? AND (stock_vitrina + stock_bodega) >= ? ORDER BY fecha_vencimiento ASC LIMIT 1 FOR UPDATE");
         $stmtL->execute([$prodId, $cant]);
         $lote = $stmtL->fetch();
 
         if (!$lote) {
-            $db->rollBack();
-            jsonResponse(['success' => false, 'message' => "Stock insuficiente en vitrina para {$prod['nombre']}."], 400);
+            // Validar stock total disponible en todos los lotes
+            $stmtSum = $db->prepare("SELECT SUM(stock_vitrina + stock_bodega) AS total_disp FROM lotes WHERE producto_id = ?");
+            $stmtSum->execute([$prodId]);
+            $totalDisp = intval($stmtSum->fetch()['total_disp'] ?? 0);
+
+            if ($totalDisp < $cant) {
+                $db->rollBack();
+                jsonResponse(['success' => false, 'message' => "Stock insuficiente para '{$prod['nombre']}' (disponible: {$totalDisp} un., solicitado: {$cant} un.)."], 400);
+            }
+
+            // Seleccionar el lote FEFO prioritario
+            $stmtL = $db->prepare("SELECT * FROM lotes WHERE producto_id = ? AND (stock_vitrina + stock_bodega) > 0 ORDER BY fecha_vencimiento ASC LIMIT 1 FOR UPDATE");
+            $stmtL->execute([$prodId]);
+            $lote = $stmtL->fetch();
         }
 
         $precioUnit = $prod['precio_venta'];
@@ -57,13 +75,15 @@ try {
         }
 
         $it['lote_id'] = $lote['id'];
+        $it['lote_obj'] = $lote;
         $it['precio_final'] = $precioUnit;
         $subtotalBruto += $precioUnit * $cant;
     }
 
     $descuentoIsapre = intval(round($subtotalBruto * $descuentoFactor));
-    $copagoTotal = $subtotalBruto - $descuentoIsapre;
+    $copagoTotal = max(0, $subtotalBruto - $descuentoIsapre);
 
+    // 1. Insertar encabezado de Venta
     $sqlVenta = "INSERT INTO ventas 
         (folio_dte, tipo_dte, subtotal_bruto, descuento_isapre, ahorro_cenabast, copago_total, metodo_pago, rut_cliente, nombre_cliente, convenio_salud, es_tercero, rut_receptor_tercero, nombre_receptor_tercero, telefono_receptor, usuario_id, timbre_ted_hash)
         VALUES (?, 'BOLETA_ELECTRONICA', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -77,8 +97,8 @@ try {
     $ventaId = $db->lastInsertId();
 
     $stmtD = $db->prepare("INSERT INTO venta_detalles (venta_id, producto_id, lote_id, cantidad, precio_unitario, copago_unitario, subtotal) VALUES (?, ?, ?, ?, ?, ?, ?)");
-    $stmtUpdLote = $db->prepare("UPDATE lotes SET stock_vitrina = stock_vitrina - ? WHERE id = ?");
 
+    // 2. Procesar ítems y descontar lotes (FEFO)
     foreach ($items as $it) {
         $cant = $it['cantidad'];
         $precioUnit = $it['precio_final'];
@@ -86,8 +106,24 @@ try {
         $sub = $precioUnit * $cant;
 
         $stmtD->execute([$ventaId, $it['producto_id'], $it['lote_id'], $cant, $precioUnit, $copagoUnit, $sub]);
-        $stmtUpdLote->execute([$cant, $it['lote_id']]);
 
+        // Descontar preferentemente de vitrina, y si falta, de bodega
+        $loteRow = $it['lote_obj'];
+        $cantVitrina = min($cant, $loteRow['stock_vitrina']);
+        $cantBodega = $cant - $cantVitrina;
+
+        if ($cantVitrina > 0 && $cantBodega > 0) {
+            $stmtUpd = $db->prepare("UPDATE lotes SET stock_vitrina = stock_vitrina - ?, stock_bodega = GREATEST(0, stock_bodega - ?) WHERE id = ?");
+            $stmtUpd->execute([$cantVitrina, $cantBodega, $it['lote_id']]);
+        } elseif ($cantVitrina > 0) {
+            $stmtUpd = $db->prepare("UPDATE lotes SET stock_vitrina = stock_vitrina - ? WHERE id = ?");
+            $stmtUpd->execute([$cantVitrina, $it['lote_id']]);
+        } else {
+            $stmtUpd = $db->prepare("UPDATE lotes SET stock_bodega = GREATEST(0, stock_bodega - ?) WHERE id = ?");
+            $stmtUpd->execute([$cantBodega, $it['lote_id']]);
+        }
+
+        // 3. Si el fármaco es controlado, registrar en Libro Oficial ISP
         $stmtP = $db->prepare("SELECT es_controlado, nombre FROM productos WHERE id = ?");
         $stmtP->execute([$it['producto_id']]);
         $prodInfo = $stmtP->fetch();
@@ -98,7 +134,8 @@ try {
             $saldoActual = intval($stmtSaldo->fetch()['saldo_total'] ?? 0);
 
             $stmtPrevHash = $db->query("SELECT hash_sha256 FROM libro_controlados_isp ORDER BY id DESC LIMIT 1");
-            $prevHash = $stmtPrevHash->fetch()['hash_sha256'] ?? str_repeat('0', 64);
+            $prevHashRow = $stmtPrevHash ? $stmtPrevHash->fetch() : null;
+            $prevHash = ($prevHashRow && !empty($prevHashRow['hash_sha256'])) ? $prevHashRow['hash_sha256'] : str_repeat('0', 64);
             $newHash = hash('sha256', $ventaId . $it['producto_id'] . $cant . $prevHash . time());
 
             $sqlLibro = "INSERT INTO libro_controlados_isp 
@@ -117,7 +154,7 @@ try {
 
     jsonResponse([
         'success' => true,
-        'message' => "Venta procesada exitosamente con rebaja FEFO y timbraje DTE.",
+        'message' => "Venta N° {$folioDte} procesada exitosamente con rebaja FEFO y timbraje DTE.",
         'dte' => [
             'folio' => $folioDte,
             'subtotal' => $subtotalBruto,

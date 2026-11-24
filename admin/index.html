@@ -1,17 +1,78 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="h-full">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Consola de Administración Gerencial | FarmaRed Chile</title>
+  <title>FarmaRed Chile | Consola de Administración Ejecutiva</title>
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Estilos Personalizados y Tipografía Profesional -->
   <link rel="stylesheet" href="../assets/css/custom.css">
+  <style>
+    /* Estilos Dark Executive (Inspirados en Pump Fitness) */
+    body {
+      background-color: #0b0c0e;
+      color: #f1f5f9;
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    }
+    .sidebar-dark {
+      background-color: #101115;
+      border-color: #1e2128;
+    }
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.65rem 0.85rem;
+      border-radius: 0.75rem;
+      color: #94a3b8;
+      font-weight: 600;
+      font-size: 0.8125rem;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+    }
+    .sidebar-link:hover {
+      background-color: #1a1d24;
+      color: #ffffff;
+    }
+    .sidebar-link.active {
+      background-color: #1a1d24;
+      color: #ffffff;
+      border: 1px solid #2b303c;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    }
+    /* Colapsado en Desktop */
+    .sidebar-collapsed {
+      width: 4.75rem !important;
+    }
+    .sidebar-collapsed .sidebar-text,
+    .sidebar-collapsed .sidebar-cat-label,
+    .sidebar-collapsed .sidebar-subtext {
+      display: none !important;
+    }
+    .sidebar-collapsed .sidebar-link {
+      justify-content: center;
+      padding: 0.75rem 0;
+    }
+    .sidebar-collapsed .sidebar-brand-box {
+      justify-content: center;
+    }
+    .kpi-dark-card {
+      background-color: #121318;
+      border: 1px solid #1f222b;
+      border-radius: 1rem;
+      padding: 1.25rem 1.5rem;
+      transition: all 0.2s ease;
+    }
+    .kpi-dark-card:hover {
+      border-color: #2f3442;
+      transform: translateY(-2px);
+    }
+  </style>
 </head>
-<body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex flex-col selection:bg-emerald-100 selection:text-emerald-900">
+<body class="h-full overflow-hidden flex flex-col antialiased selection:bg-emerald-500 selection:text-white">
 
-  <!-- ============================================================== -->
-  <!-- MODAL / BARRERA DE SEGURIDAD (LOGIN GERENCIAL) -->
-  <!-- ============================================================== -->
+  <!-- OVERLAY LOGIN ADMINISTRATIVO -->
   <div id="admin-login-overlay" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-200">
       
@@ -39,9 +100,15 @@
           Credenciales incorrectas. Verifique la contraseña.
         </div>
 
-        <button onclick="autenticarAdmin()" class="w-full py-3 bg-gradient-to-r from-slate-900 to-indigo-950 hover:from-slate-800 hover:to-indigo-900 text-white font-extrabold rounded-xl shadow-md transition-all text-sm flex items-center justify-center gap-2">
+        <button onclick="autenticarAdmin()" class="w-full py-3 bg-gradient-to-r from-slate-900 to-indigo-950 hover:from-slate-800 hover:to-indigo-900 text-white font-extrabold rounded-xl shadow-md transition-all text-sm flex items-center justify-center gap-2 cursor-pointer">
           Desbloquear Consola Gerencial
         </button>
+
+        <div class="pt-2 text-center">
+          <button type="button" onclick="abrirModalRecuperarCuenta()" class="text-indigo-600 hover:text-indigo-800 font-bold text-xs underline cursor-pointer">
+            ¿Olvidaste tu contraseña? / Recuperar Cuenta 🔑
+          </button>
+        </div>
 
         <div class="pt-3 border-t border-slate-200 text-center">
           <a href="../index.html" class="text-slate-500 hover:text-slate-800 font-semibold text-[11px]">
@@ -51,76 +118,219 @@
       </div>
 
     </div>
-  </div>
 
-  <!-- ============================================================== -->
-  <!-- BARRA SUPERIOR DE LA CONSOLA ADMINISTRATIVA -->
-  <!-- ============================================================== -->
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap justify-between items-center gap-4">
+  <!-- BACKDROP MÓVIL (DRAWER) -->
+  <div id="mobile-sidebar-backdrop" onclick="toggleMobileSidebar()" class="fixed inset-0 bg-black/70 backdrop-blur-xs z-40 hidden md:hidden transition-opacity"></div>
+
+  <!-- CONTENEDOR PRINCIPAL FLEX -->
+  <div class="flex-1 flex overflow-hidden w-full h-full">
+
+    <!-- ============================================================== -->
+    <!-- BARRA LATERAL (SIDEBAR COLAPSABLE CON CHEVRON '<' Y MÓVIL) -->
+    <!-- ============================================================== -->
+    <aside id="sidebar-admin" class="sidebar-dark border-r fixed md:static inset-y-0 left-0 z-50 flex flex-col w-64 md:translate-x-0 -translate-x-full transition-all duration-300 ease-in-out shrink-0 select-none">
       
-      <div class="flex items-center space-x-3.5">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-700 to-slate-900 flex items-center justify-center text-white shadow-sm font-bold text-lg ring-2 ring-indigo-100">
-          🛡️
-        </div>
-        <div>
-          <div class="flex items-center gap-2">
-            <span class="text-base sm:text-lg font-black tracking-tight text-slate-900">FarmaRed</span>
-            <span class="text-xs font-semibold text-slate-400">|</span>
-            <span class="text-xs font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-200">Panel de Administración Avanzado</span>
+      <!-- Encabezado Sidebar: Logo, Marca y Botón Colapsar '<' -->
+      <div class="p-4 border-b border-[#1e2128] flex items-center justify-between gap-2">
+        <div class="sidebar-brand-box flex items-center gap-2.5 overflow-hidden">
+          <div class="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center text-white font-extrabold text-xs shadow-md shrink-0">
+            FR
           </div>
-          <p class="text-xs text-slate-500">Gestión de Catálogo, Precios CENABAST, Lotes FEFO y Cuentas de Personal</p>
+          <div class="sidebar-text overflow-hidden">
+            <div class="flex items-center gap-1.5">
+              <span class="font-extrabold tracking-tight text-white text-sm">FARMARED</span>
+              <span class="px-1.5 py-0.2 bg-emerald-500/20 text-emerald-400 font-bold text-[9px] rounded border border-emerald-500/30">PRO</span>
+            </div>
+            <p class="sidebar-subtext text-[9px] text-slate-500 font-semibold tracking-wider uppercase truncate">SANTIAGO · FARMACIA</p>
+          </div>
+        </div>
+
+        <!-- Botón Chevron '<' para achicar/abrir sidebar -->
+        <button id="sidebar-toggle-btn" onclick="toggleSidebarAdmin()" title="Colapsar menú" class="w-7 h-7 rounded-lg bg-[#181a20] hover:bg-[#22252e] border border-[#262a34] flex items-center justify-center text-slate-400 hover:text-white transition-all cursor-pointer shrink-0">
+          <svg id="sidebar-chevron" class="w-4 h-4 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Navegación Agrupada por Categorías -->
+      <div class="flex-1 overflow-y-auto p-3 space-y-6">
+        
+        <!-- GRUPO: GENERAL -->
+        <div class="space-y-1">
+          <span class="sidebar-cat-label text-[10px] font-bold text-slate-500 tracking-wider uppercase px-2.5 block mb-1.5">GENERAL</span>
+          <button onclick="cambiarSeccionAdmin('dashboard')" id="nav-btn-dashboard" class="sidebar-link active w-full">
+            <span class="text-base shrink-0">📊</span>
+            <span class="sidebar-text">Dashboard Gerencial</span>
+          </button>
+          <button onclick="cambiarSeccionAdmin('turnos')" id="nav-btn-turnos" class="sidebar-link w-full">
+            <span class="text-base shrink-0">📅</span>
+            <span class="sidebar-text">Horarios & Calendarios</span>
+          </button>
+        </div>
+
+        <!-- GRUPO: FARMACIA & CLÍNICA -->
+        <div class="space-y-1">
+          <span class="sidebar-cat-label text-[10px] font-bold text-slate-500 tracking-wider uppercase px-2.5 block mb-1.5">FARMACIA & DISPENSACIÓN</span>
+          <button onclick="cambiarSeccionAdmin('medicamentos')" id="nav-btn-medicamentos" class="sidebar-link w-full">
+            <span class="text-base shrink-0">💊</span>
+            <span class="sidebar-text">Catálogo & Precios (CRUD)</span>
+          </button>
+          <button onclick="cambiarSeccionAdmin('lotes')" id="nav-btn-lotes" class="sidebar-link w-full">
+            <span class="text-base shrink-0">📦</span>
+            <span class="sidebar-text">Ingreso de Lotes (FEFO)</span>
+          </button>
+          <button onclick="cambiarSeccionAdmin('movimientos')" id="nav-btn-movimientos" class="sidebar-link w-full">
+            <span class="text-base shrink-0">🧾</span>
+            <span class="sidebar-text">Kardex & Ventas DTE</span>
+          </button>
+        </div>
+
+        <!-- GRUPO: SEGURIDAD & AUDITORÍA -->
+        <div class="space-y-1">
+          <span class="sidebar-cat-label text-[10px] font-bold text-slate-500 tracking-wider uppercase px-2.5 block mb-1.5">SEGURIDAD & AUDITORÍA</span>
+          <button onclick="cambiarSeccionAdmin('auditoria')" id="nav-btn-auditoria" class="sidebar-link w-full">
+            <span class="text-base shrink-0">🛡️</span>
+            <div class="sidebar-text flex-1 flex items-center justify-between">
+              <span>Auditoría en Vivo</span>
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            </div>
+          </button>
+          <button onclick="cambiarSeccionAdmin('usuarios')" id="nav-btn-usuarios" class="sidebar-link w-full">
+            <span class="text-base shrink-0">👥</span>
+            <span class="sidebar-text">Personal & Roles (RBAC)</span>
+          </button>
+        </div>
+
+        <!-- GRUPO: SISTEMA -->
+        <div class="space-y-1 pt-2 border-t border-[#1e2128]">
+          <span class="sidebar-cat-label text-[10px] font-bold text-slate-500 tracking-wider uppercase px-2.5 block mb-1.5">SISTEMA</span>
+          <a href="../index.html?tab=pos" class="sidebar-link w-full text-emerald-400 hover:text-emerald-300">
+            <span class="text-base shrink-0">🛒</span>
+            <span class="sidebar-text">Ir a Sala de Ventas (POS)</span>
+          </a>
+          <button onclick="abrirModalRecuperarCuenta()" class="sidebar-link w-full text-indigo-400 hover:text-indigo-300">
+            <span class="text-base shrink-0">🔑</span>
+            <span class="sidebar-text">Recuperar Acceso</span>
+          </button>
+          <button onclick="cerrarSesionAdmin()" class="sidebar-link w-full text-rose-400 hover:text-rose-300">
+            <span class="text-base shrink-0">🚪</span>
+            <span class="sidebar-text">Cerrar Sesión</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Pie del Sidebar: Usuario Logueado -->
+      <div class="p-3 border-t border-[#1e2128] bg-[#0c0d10]">
+        <div class="flex items-center gap-2.5 overflow-hidden">
+          <div class="w-8 h-8 rounded-full bg-indigo-600/30 border border-indigo-500/50 flex items-center justify-center text-indigo-300 font-bold text-xs shrink-0">
+            AD
+          </div>
+          <div class="sidebar-text overflow-hidden">
+            <p class="text-xs font-bold text-white truncate">Prof. Juan José Mir</p>
+            <p class="text-[10px] text-slate-500 truncate">Docente Evaluador / Admin</p>
+          </div>
         </div>
       </div>
 
-      <div class="flex items-center gap-3 text-xs">
-        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full font-medium bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs">
-          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span class="font-semibold">Servidor MySQL Conectado</span>
+    </aside>
+
+    <!-- ============================================================== -->
+    <!-- ÁREA DE CONTENIDO PRINCIPAL (HEADER + KPIS + SECCIONES) -->
+    <!-- ============================================================== -->
+    <div id="main-content-wrapper" class="flex-1 flex flex-col min-w-0 bg-[#0b0c0e] overflow-y-auto">
+      
+      <!-- BARRA SUPERIOR MÓVIL Y DESKTOP -->
+      <header class="bg-[#101115] border-b border-[#1e2128] sticky top-0 z-30 px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
+        
+        <!-- Izquierda: Botón Menú Móvil + Breadcrumb -->
+        <div class="flex items-center gap-3">
+          <button onclick="toggleMobileSidebar()" class="md:hidden p-2 rounded-lg bg-[#181a20] text-slate-300 hover:text-white border border-[#262a34] cursor-pointer">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+
+          <div>
+            <div class="flex items-center gap-2 text-xs">
+              <span class="text-emerald-500 font-bold">FARMARED</span>
+              <span class="text-slate-600">/</span>
+              <span id="active-breadcrumb" class="text-slate-300 font-semibold">Dashboard Gerencial</span>
+            </div>
+            <p class="text-[11px] text-slate-500 hidden sm:block">Sucursal Alameda Santiago Centro · Motor Transaccional InnoDB</p>
+          </div>
         </div>
 
-        <a href="../index.html?tab=pos" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-xs transition-all flex items-center gap-1.5">
-          🛒 Sala de Ventas (POS)
-        </a>
+        <!-- Derecha: Estado de Conexión, Reloj y Acceso Rápido -->
+        <div class="flex items-center gap-2.5 text-xs">
+          <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-800 text-[11px] font-semibold">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span class="hidden sm:inline">MySQL Conectado</span>
+          </div>
 
-        <button onclick="cerrarSesionAdmin()" class="px-3 py-1.5 border border-slate-300 hover:bg-rose-50 hover:text-rose-700 text-slate-600 font-bold rounded-lg transition-all">
-          Cerrar Sesión 🔒
-        </button>
-      </div>
+          <a href="../index.html?tab=pos" class="hidden sm:flex px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs items-center gap-1.5 shadow-sm">
+            <span>🛒</span> Sala de Ventas
+          </a>
 
-    </div>
+          <button onclick="cerrarSesionAdmin()" class="px-3 py-1.5 bg-[#181a20] hover:bg-rose-950/60 hover:text-rose-300 text-slate-400 font-bold rounded-lg border border-[#262a34] text-xs">
+            Salir
+          </button>
+        </div>
 
-    <!-- PESTAÑAS ADMINISTRATIVAS -->
-    <div class="bg-slate-50 border-t border-slate-200">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex space-x-2 sm:space-x-4 overflow-x-auto text-xs sm:text-sm">
-        <button onclick="cambiarSeccionAdmin('dashboard')" id="nav-btn-dashboard" class="py-3 px-3 font-bold text-indigo-700 border-b-2 border-indigo-600 flex items-center gap-1.5 whitespace-nowrap">
-          📊 Resumen Gerencial
-        </button>
-        <button onclick="cambiarSeccionAdmin('medicamentos')" id="nav-btn-medicamentos" class="py-3 px-3 font-medium text-slate-600 hover:text-slate-900 border-b-2 border-transparent flex items-center gap-1.5 whitespace-nowrap">
-          💊 Catálogo & Precios (CRUD)
-        </button>
-        <button onclick="cambiarSeccionAdmin('lotes')" id="nav-btn-lotes" class="py-3 px-3 font-medium text-slate-600 hover:text-slate-900 border-b-2 border-transparent flex items-center gap-1.5 whitespace-nowrap">
-          📦 Ingreso de Lotes (FEFO)
-        </button>
-        <button onclick="cambiarSeccionAdmin('movimientos')" id="nav-btn-movimientos" class="py-3 px-3 font-medium text-slate-600 hover:text-slate-900 border-b-2 border-transparent flex items-center gap-1.5 whitespace-nowrap">
-          📜 Kardex & Auditoría Ventas
-        </button>
-        <button onclick="cambiarSeccionAdmin('usuarios')" id="nav-btn-usuarios" class="py-3 px-3 font-medium text-slate-600 hover:text-slate-900 border-b-2 border-transparent flex items-center gap-1.5 whitespace-nowrap">
-          👥 Personal & Roles (RBAC)
-        </button>
-      </div>
-    </div>
-  </header>
+      </header>
 
-  <!-- ============================================================== -->
-  <!-- CONTENEDOR PRINCIPAL DE MÓDULOS -->
-  <!-- ============================================================== -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
+      <!-- CUERPO PRINCIPAL CON SCROLL -->
+      <main class="p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl w-full mx-auto">
+        
+        <!-- 4 TARJETAS KPI IDÉNTICAS AL DISEÑO DE REFERENCIA (PUMP FITNESS) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          
+          <!-- KPI 1: FÁRMACOS ACTIVOS -->
+          <div class="kpi-dark-card flex justify-between items-start cursor-pointer hover:border-slate-700" onclick="cambiarSeccionAdmin('medicamentos')">
+            <div>
+              <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">FÁRMACOS ACTIVOS</span>
+              <div class="text-3xl font-black text-white font-mono mt-1" id="kpi-farmacos-activos">8</div>
+              <span class="text-xs text-slate-500 font-semibold block mt-1.5">+2 este mes</span>
+            </div>
+            <span class="text-slate-600 text-sm font-bold">›</span>
+          </div>
 
-    <!-- ============================================================== -->
-    <!-- SECCIÓN 1: RESUMEN GERENCIAL & KPIS -->
-    <!-- ============================================================== -->
-    <section id="sec-dashboard" class="space-y-6">
+          <!-- KPI 2: VENTAS MENSUALES / DÍA (VERDE DESTACADO) -->
+          <div class="kpi-dark-card flex justify-between items-start cursor-pointer hover:border-emerald-800/80" onclick="cambiarSeccionAdmin('movimientos')">
+            <div>
+              <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">INGRESOS DE VENTAS</span>
+              <div class="text-3xl font-black text-emerald-400 font-mono mt-1" id="kpi-ventas-hoy">$520.000</div>
+              <span class="text-xs text-emerald-600 font-semibold block mt-1.5">Noviembre 2026</span>
+            </div>
+            <span class="text-slate-600 text-sm font-bold">›</span>
+          </div>
+
+          <!-- KPI 3: CUMPLIMIENTO / STOCK BODEGA (ROJO/AMBER O VERDE) -->
+          <div class="kpi-dark-card flex justify-between items-start cursor-pointer hover:border-slate-700" onclick="cambiarSeccionAdmin('lotes')">
+            <div>
+              <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">STOCK BODEGA CENTRAL</span>
+              <div class="text-3xl font-black text-rose-500 font-mono mt-1" id="kpi-stock-bodega">340 un.</div>
+              <span class="text-xs text-slate-500 font-semibold block mt-1.5">Capacidad disponible</span>
+            </div>
+            <span class="text-slate-600 text-sm font-bold">›</span>
+          </div>
+
+          <!-- KPI 4: TURNOS PROGRAMADOS -->
+          <div class="kpi-dark-card flex justify-between items-start cursor-pointer hover:border-slate-700" onclick="cambiarSeccionAdmin('turnos')">
+            <div>
+              <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">TURNOS EN CURSO</span>
+              <div class="text-3xl font-black text-white font-mono mt-1" id="kpi-turnos-confirmados">4</div>
+              <span class="text-xs text-slate-500 font-semibold block mt-1.5">Próximos turnos</span>
+            </div>
+            <span class="text-slate-600 text-sm font-bold">›</span>
+          </div>
+
+        </div>
+
+        <!-- CONTENEDOR DE SECCIONES DINÁMICAS -->
+        <div class="space-y-6">
+          <section id="sec-dashboard" class="space-y-6">
       <div class="bg-gradient-to-r from-slate-900 to-indigo-950 text-white p-6 rounded-3xl shadow-sm border border-slate-800 flex flex-wrap justify-between items-center gap-4">
         <div>
           <span class="text-xs text-emerald-400 font-bold uppercase tracking-wider">● Sesión Autenticada</span>
@@ -163,11 +373,7 @@
         </div>
       </div>
     </section>
-
-    <!-- ============================================================== -->
-    <!-- SECCIÓN 2: GESTIÓN DE MEDICAMENTOS (CRUD COMPLETO) -->
-    <!-- ============================================================== -->
-    <section id="sec-medicamentos" class="hidden space-y-4">
+          <section id="sec-medicamentos" class="hidden space-y-4">
       <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-wrap justify-between items-center gap-3">
         <div>
           <h2 class="text-base font-extrabold text-slate-900">Catálogo Maestro de Medicamentos & Fijación de Precios</h2>
@@ -199,11 +405,7 @@
         </div>
       </div>
     </section>
-
-    <!-- ============================================================== -->
-    <!-- SECCIÓN 3: RECEPCIÓN DE LOTES & CONTROL FEFO -->
-    <!-- ============================================================== -->
-    <section id="sec-lotes" class="hidden space-y-4">
+          <section id="sec-lotes" class="hidden space-y-4">
       <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
         <div class="flex justify-between items-center">
           <div>
@@ -235,19 +437,45 @@
             <input id="lote-cant-bodega" type="number" min="1" value="50" class="w-full p-2.5 border border-slate-300 rounded-xl font-mono font-bold outline-none">
           </div>
 
-          <div class="sm:col-span-12 flex justify-end">
-            <button onclick="guardarNuevoLote()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl shadow-xs text-xs flex items-center gap-1.5">
+                    <div class="sm:col-span-12 flex justify-end">
+            <button onclick="guardarNuevoLote()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl shadow-xs text-xs flex items-center gap-1.5 cursor-pointer">
               <span>✓</span> Registrar Ingreso a Bodega
             </button>
           </div>
         </div>
       </div>
-    </section>
 
-    <!-- ============================================================== -->
-    <!-- SECCIÓN 4: AUDITORÍA DE MOVIMIENTOS & KARDEX DE VENTAS -->
-    <!-- ============================================================== -->
-    <section id="sec-movimientos" class="hidden space-y-4">
+      <!-- Tabla de Lotes y Existencias en Bodega y Vitrina (FEFO) -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+        <div class="p-4 border-b border-slate-100 flex justify-between items-center">
+          <div>
+            <h3 class="text-sm font-extrabold text-slate-900">Lotes Activos en Bodega y Fechas FEFO</h3>
+            <p class="text-xs text-slate-500">Existencias actuales en Bodega Central y Vitrina Mostrador para cada medicamento.</p>
+          </div>
+          <span class="text-xs font-mono font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-lg">Algoritmo FEFO Activo</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="bg-slate-50 text-slate-700 border-b border-slate-200 font-bold">
+                <th class="py-3 px-4">Código ISP</th>
+                <th class="py-3 px-4">Medicamento & Lab</th>
+                <th class="py-3 px-4">Lote Fabricante</th>
+                <th class="py-3 px-4">Vencimiento</th>
+                <th class="py-3 px-4 text-center">Estado FEFO</th>
+                <th class="py-3 px-4 text-center">Bodega Central</th>
+                <th class="py-3 px-4 text-center">Vitrina Mostrador</th>
+                <th class="py-3 px-4 text-center">Acción Inmediata</th>
+              </tr>
+            </thead>
+            <tbody id="lotes-bodega-body" class="divide-y divide-slate-100">
+              <!-- Se puebla dinamicamente -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+          <section id="sec-movimientos" class="hidden space-y-4">
       <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex justify-between items-center">
         <div>
           <h2 class="text-base font-extrabold text-slate-900">Kardex de Transacciones & Auditoría de Ventas DTE</h2>
@@ -280,11 +508,7 @@
         </div>
       </div>
     </section>
-
-    <!-- ============================================================== -->
-    <!-- SECCIÓN 5: GESTIÓN DE PERSONAL & ROLES (RBAC) -->
-    <!-- ============================================================== -->
-    <section id="sec-usuarios" class="hidden space-y-4">
+          <section id="sec-usuarios" class="hidden space-y-4">
       <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex justify-between items-center flex-wrap gap-2">
         <div>
           <h2 class="text-base font-extrabold text-slate-900">Personal Registrado & Control de Accesos (RBAC)</h2>
@@ -316,12 +540,162 @@
         </div>
       </div>
     </section>
+          <section id="sec-auditoria" class="hidden space-y-6">
+      
+      <!-- Encabezado de Auditoría -->
+      <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-6 rounded-3xl shadow-sm border border-slate-800 flex flex-wrap justify-between items-center gap-4">
+        <div>
+          <span class="text-xs text-emerald-400 font-bold uppercase tracking-wider">● Trazabilidad Forense & Registro Legal</span>
+          <h2 class="text-2xl font-black mt-1">Auditoría y Monitoreo de Sesiones en Vivo</h2>
+          <p class="text-xs text-slate-300 mt-1">Supervisión en tiempo real de todas las acciones ejecutadas por cada usuario (ventas, stock, recetas ISP y accesos).</p>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="cargarAuditoriaDesdeBD()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-sm cursor-pointer">
+            🔄 Actualizar en Vivo
+          </button>
+          <button onclick="exportarAuditoriaCSV()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl text-xs flex items-center gap-1.5 border border-slate-700 cursor-pointer">
+            📥 Exportar Log CSV
+          </button>
+        </div>
+      </div>
 
-  </main>
+      <!-- Métricas Rápidas de Seguridad -->
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+          <span class="text-xs text-slate-500 font-semibold block mb-1">Total Eventos Registrados</span>
+          <span id="audit-total-eventos" class="text-2xl font-black text-slate-900 font-mono">24</span>
+          <span class="text-[11px] text-emerald-600 block mt-1 font-semibold">● 100% Inmutables</span>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+          <span class="text-xs text-slate-500 font-semibold block mb-1">Usuarios Monitoreados</span>
+          <span id="audit-total-usuarios" class="text-2xl font-black text-indigo-700 font-mono">4</span>
+          <span class="text-[11px] text-slate-500 block mt-1 font-semibold">Con roles RBAC activos</span>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+          <span class="text-xs text-slate-500 font-semibold block mb-1">Ventas y DTE Auditados</span>
+          <span id="audit-total-ventas" class="text-2xl font-black text-emerald-700 font-mono">3</span>
+          <span class="text-[11px] text-emerald-600 block mt-1 font-semibold">Timbrados SII válidos</span>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+          <span class="text-xs text-slate-500 font-semibold block mb-1">Movimientos de Stock / FEFO</span>
+          <span id="audit-total-stock" class="text-2xl font-black text-amber-600 font-mono">5</span>
+          <span class="text-[11px] text-amber-700 block mt-1 font-semibold">Trazabilidad de lote</span>
+        </div>
+      </div>
 
-  <!-- ============================================================== -->
-  <!-- MODAL: REGISTRAR / EDITAR MEDICAMENTO -->
-  <!-- ============================================================== -->
+      <!-- Filtros de Auditoría -->
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-wrap justify-between items-center gap-3 text-xs">
+        <div class="flex flex-wrap items-center gap-3 flex-1">
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">Filtrar por Usuario:</label>
+            <select id="filtro-audit-usuario" onchange="filtrarAuditoria()" class="p-2 border border-slate-300 rounded-xl bg-white font-medium outline-none">
+              <option value="0">Todos los Usuarios</option>
+              <option value="1">Administrador General (Admin)</option>
+              <option value="2">Sebastián Torres (Químico Farmacéutico)</option>
+              <option value="3">Vicente Flores (Vendedor / Cajero)</option>
+              <option value="4">Operador de Bodega (Bodeguero)</option>
+            </select>
+          </div>
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">Filtrar por Módulo:</label>
+            <select id="filtro-audit-modulo" onchange="filtrarAuditoria()" class="p-2 border border-slate-300 rounded-xl bg-white font-medium outline-none">
+              <option value="TODOS">Todos los Módulos</option>
+              <option value="AUTENTICACION">Autenticación / Sesiones</option>
+              <option value="POS_VENTAS">Punto de Venta / DTE</option>
+              <option value="CONTROLADOS">Libro Controlados ISP</option>
+              <option value="INVENTARIO">Inventario / Vitrina</option>
+              <option value="BODEGA_FEFO">Recepción Bodega FEFO</option>
+              <option value="RELOJ_CONTROL">Marcación de Horario</option>
+            </select>
+          </div>
+        </div>
+        <span class="text-xs font-mono font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl">
+          🔒 Registro Inmutable InnoDB
+        </span>
+      </div>
+
+      <!-- Tabla de Eventos de Auditoría -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="bg-slate-50 text-slate-700 border-b border-slate-200 font-bold">
+                <th class="py-3 px-4">ID</th>
+                <th class="py-3 px-4">Fecha y Hora</th>
+                <th class="py-3 px-4">Usuario Responsable</th>
+                <th class="py-3 px-4">Rol</th>
+                <th class="py-3 px-4">Acción Ejecutada</th>
+                <th class="py-3 px-4">Módulo</th>
+                <th class="py-3 px-4">Detalle de la Operación</th>
+                <th class="py-3 px-4 text-center">IP Origen</th>
+              </tr>
+            </thead>
+            <tbody id="auditoria-body" class="divide-y divide-slate-100">
+              <!-- Se puebla dinámicamente -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+          <section id="sec-turnos" class="hidden space-y-6">
+      
+      <!-- Encabezado de Turnos -->
+      <div class="bg-gradient-to-r from-indigo-900 via-slate-900 to-indigo-950 text-white p-6 rounded-3xl shadow-sm border border-slate-800 flex flex-wrap justify-between items-center gap-4">
+        <div>
+          <span class="text-xs text-sky-400 font-bold uppercase tracking-wider">● Gestión de Personas & Turnos Rotativos</span>
+          <h2 class="text-2xl font-black mt-1">Horarios de Personal y Sincronización de Calendarios</h2>
+          <p class="text-xs text-slate-300 mt-1">Planificación de turnos de farmacia, control de asistencia en tiempo real y exportación directa a Google Calendar y Apple Calendar.</p>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="descargarTodosLosTurnosIcs()" class="px-4 py-2 bg-white text-slate-900 hover:bg-slate-100 font-extrabold rounded-xl text-xs flex items-center gap-2 shadow-sm cursor-pointer">
+            🍏 Exportar Todo a Apple Calendar (.ics)
+          </button>
+        </div>
+      </div>
+
+      <!-- Reloj Control de Marcación Inmediata de Asistencia -->
+      <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs flex flex-wrap justify-between items-center gap-4">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-200 text-indigo-700 flex items-center justify-center text-xl font-bold">
+            ⏰
+          </div>
+          <div>
+            <h3 class="text-sm font-extrabold text-slate-900">Reloj Control de Asistencia y Turno Presencial</h3>
+            <p class="text-xs text-slate-500">Registra tu horario de entrada y salida con firma digital e incorporación al log de auditoría.</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <button onclick="marcarAsistenciaRelojControl('ENTRADA')" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl text-xs flex items-center gap-1.5 shadow-sm cursor-pointer">
+            <span>✅</span> Marcar Entrada de Turno
+          </button>
+          <button onclick="marcarAsistenciaRelojControl('SALIDA')" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-extrabold rounded-xl text-xs flex items-center gap-1.5 shadow-sm cursor-pointer">
+            <span>🚪</span> Marcar Salida de Turno
+          </button>
+        </div>
+      </div>
+
+      <!-- Tarjetas de Turnos Asignados con Botones Google / Apple Calendar -->
+      <div class="space-y-4">
+        <div class="flex justify-between items-center">
+          <h3 class="text-sm font-extrabold text-slate-900">Turnos Programados de la Semana</h3>
+          <span class="text-xs font-semibold text-slate-500">Horarios oficiales aprobados por Dirección Técnica</span>
+        </div>
+
+        <div id="turnos-cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Se puebla dinámicamente con botones de Google Calendar y Apple Calendar -->
+        </div>
+      </div>
+
+    </section>
+        </div>
+
+      </main>
+
+    </div>
+
+  </div>
+
+  <!-- MODALES DE CONTROL -->
   <div id="modal-medicamento" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
       <div class="flex justify-between items-center mb-4">
@@ -341,60 +715,6 @@
             <input id="med-principio" type="text" placeholder="ej. Paracetamol" class="w-full p-2 border border-slate-300 rounded-xl outline-none">
           </div>
         </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block font-bold text-slate-700 mb-1">Laboratorio:</label>
-            <input id="med-lab" type="text" placeholder="ej. Laboratorio Chile" class="w-full p-2 border border-slate-300 rounded-xl outline-none">
-          </div>
-          <div>
-            <label class="block font-bold text-slate-700 mb-1">Código ISP:</label>
-            <input id="med-isp" type="text" placeholder="ej. F-22104" class="w-full p-2 border border-slate-300 rounded-xl font-mono outline-none">
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block font-bold text-slate-700 mb-1">Código Barra EAN-13:</label>
-            <input id="med-barra" type="text" placeholder="780000001099" class="w-full p-2 border border-slate-300 rounded-xl font-mono outline-none">
-          </div>
-          <div>
-            <label class="block font-bold text-slate-700 mb-1">Precio de Venta ($):</label>
-            <input id="med-precio" type="number" placeholder="2500" class="w-full p-2 border border-slate-300 rounded-xl font-mono font-bold outline-none">
-          </div>
-        </div>
-
-        <div>
-          <label class="block font-bold text-slate-700 mb-1">Condición de Venta Sanitaria:</label>
-          <select id="med-condicion" class="w-full p-2 border border-slate-300 rounded-xl outline-none bg-white">
-            <option value="VENTA_DIRECTA">Venta Directa (Sin Receta)</option>
-            <option value="RECETA_SIMPLE">Receta Médica Simple</option>
-            <option value="RECETA_RETENIDA">⚠️ Receta Retenida (Controlado ISP)</option>
-          </select>
-        </div>
-
-        <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl space-y-2">
-          <label class="flex items-center gap-2 cursor-pointer font-bold text-emerald-900">
-            <input id="med-es-cenabast" type="checkbox" onchange="toggleCenabastInput(this.checked)" class="rounded text-emerald-600">
-            <span>¿Sujeto a Regulación de Precios Ley CENABAST N° 21.198?</span>
-          </label>
-          <div id="box-cenabast-max" class="hidden">
-            <label class="block font-bold text-emerald-800 mb-1">Precio Máximo Fijado por CENABAST ($):</label>
-            <input id="med-cenabast-max" type="number" placeholder="1800" class="w-full p-2 border border-emerald-300 rounded-lg font-mono font-bold bg-white">
-          </div>
-        </div>
-      </div>
-
-      <div class="mt-5 flex justify-end gap-2 text-xs">
-        <button onclick="cerrarModalMedicamento()" class="px-4 py-2 border border-slate-300 rounded-xl font-bold text-slate-600 hover:bg-slate-50">Cancelar</button>
-        <button onclick="guardarMedicamento()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl shadow-xs">Guardar Medicamento</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ============================================================== -->
-  <!-- MODAL: REGISTRAR NUEVO TRABAJADOR -->
-  <!-- ============================================================== -->
   <div id="modal-usuario" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
       <div class="flex justify-between items-center mb-4">
@@ -429,37 +749,122 @@
           <input id="usr-pass" type="text" value="inacap2026" class="w-full p-2 border border-slate-300 rounded-xl font-mono font-bold outline-none">
         </div>
       </div>
+  <div id="modal-recuperar-cuenta" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-200 animate-scale-up">
+      <div class="flex justify-between items-center mb-4">
+        <div class="flex items-center gap-2">
+          <div class="w-9 h-9 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-700 flex items-center justify-center font-bold">
+            🔑
+          </div>
+          <div>
+            <h3 class="text-base font-extrabold text-slate-900">Recuperar Acceso</h3>
+            <p class="text-xs text-slate-500">Restablecimiento seguro de credenciales</p>
+          </div>
+        </div>
+        <button onclick="cerrarModalRecuperarCuenta()" class="text-slate-400 hover:text-slate-600 text-lg font-bold">✕</button>
+      </div>
 
-      <div class="mt-5 flex justify-end gap-2 text-xs">
-        <button onclick="cerrarModalUsuario()" class="px-4 py-2 border border-slate-300 rounded-xl font-bold text-slate-600 hover:bg-slate-50">Cancelar</button>
-        <button onclick="guardarNuevoUsuario()" class="px-5 py-2 bg-indigo-700 hover:bg-indigo-800 text-white font-extrabold rounded-xl shadow-xs">Crear Cuenta</button>
+      <!-- Paso 1: Solicitar Código -->
+      <div id="rec-paso-1" class="space-y-3.5 text-xs">
+        <p class="text-slate-600">Ingrese su correo institucional registrado para generar su código PIN de verificación temporal.</p>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Correo Electrónico:</label>
+          <input id="rec-email" type="email" value="admin@farmacia.cl" class="w-full p-2.5 border border-slate-300 rounded-xl font-medium outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <button onclick="solicitarCodigoRecuperacion()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-xl shadow-xs cursor-pointer">
+          Enviar Código de Verificación
+        </button>
+      </div>
+
+      <!-- Paso 2: Validar Código y Cambiar Clave -->
+      <div id="rec-paso-2" class="hidden space-y-3.5 text-xs">
+        <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-[11px]">
+          <strong>Código generado con éxito:</strong> Ingréselo a continuación para crear su nueva contraseña.
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Código PIN (6 dígitos):</label>
+          <input id="rec-pin" type="text" placeholder="ej. 849201" maxlength="6" class="w-full p-2.5 border border-slate-300 rounded-xl font-mono font-bold text-center text-lg outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Nueva Contraseña:</label>
+          <input id="rec-nueva-pass" type="password" placeholder="Mínimo 6 caracteres" class="w-full p-2.5 border border-slate-300 rounded-xl font-medium outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <button onclick="restablecerPasswordConCodigo()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl shadow-xs cursor-pointer">
+          Actualizar y Restablecer Contraseña
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- TOAST CONTAINER -->
-  <div id="toast-admin" class="fixed bottom-4 right-4 z-50 space-y-2 pointer-events-none"></div>
+  <!-- CONTENEDOR DE NOTIFICACIONES TOAST -->
+  <div id="admin-toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm pointer-events-none"></div>
 
-  <!-- PIE DE PÁGINA ACADÉMICO -->
-  <footer class="bg-white border-t border-slate-200 text-slate-500 text-xs py-5 mt-auto">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap justify-between items-center gap-3">
-      <div class="flex items-center space-x-2">
-        <span class="font-black text-slate-800 tracking-wider">INACAP</span>
-        <span class="text-slate-300">|</span>
-        <span class="font-semibold text-slate-700">Área Tecnologías de la Información y Ciberseguridad</span>
-      </div>
-      <div class="text-center sm:text-right text-[11px] space-y-0.5">
-        <p class="font-medium text-slate-700">
-          Proyecto Integrado (AP-N4-C1) • <span class="font-bold text-slate-900">Docente Evaluador: Juan José Mir Castillo</span>
-        </p>
-        <p class="text-slate-500">
-          Desarrollado por: <strong class="text-slate-800">Vicente Flores</strong> & <strong class="text-slate-800">Sebastián Torres</strong>
-        </p>
-      </div>
-    </div>
-  </footer>
-
-  <!-- SCRIPT DE CONTROL ADMINISTRATIVO -->
+  <!-- CONTROLADOR JAVASCRIPT -->
   <script src="admin_app.js"></script>
+
+  <script>
+    // FUNCIONES DEL SIDEBAR EJECUTIVO (PC Y MÓVIL)
+    function toggleSidebarAdmin() {
+      const sidebar = document.getElementById('sidebar-admin');
+      const chevron = document.getElementById('sidebar-chevron');
+      const isCollapsed = sidebar.classList.toggle('sidebar-collapsed');
+      
+      if (isCollapsed) {
+        chevron.style.transform = 'rotate(180deg)';
+        localStorage.setItem('admin_sidebar_collapsed', 'true');
+      } else {
+        chevron.style.transform = 'rotate(0deg)';
+        localStorage.setItem('admin_sidebar_collapsed', 'false');
+      }
+    }
+
+    function toggleMobileSidebar() {
+      const sidebar = document.getElementById('sidebar-admin');
+      const backdrop = document.getElementById('mobile-sidebar-backdrop');
+      const isOpen = !sidebar.classList.contains('-translate-x-full');
+
+      if (isOpen) {
+        sidebar.classList.add('-translate-x-full');
+        backdrop.classList.add('hidden');
+      } else {
+        sidebar.classList.remove('-translate-x-full');
+        backdrop.classList.remove('hidden');
+      }
+    }
+
+    // Restaurar estado guardado en desktop
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.innerWidth >= 768 && localStorage.getItem('admin_sidebar_collapsed') === 'true') {
+        const sidebar = document.getElementById('sidebar-admin');
+        const chevron = document.getElementById('sidebar-chevron');
+        sidebar.classList.add('sidebar-collapsed');
+        if (chevron) chevron.style.transform = 'rotate(180deg)';
+      }
+    });
+
+    // Cerrar automáticamente en móvil al hacer clic en un enlace
+    const origCambiarSec = window.cambiarSeccionAdmin;
+    window.cambiarSeccionAdmin = function(sec) {
+      if (window.innerWidth < 768) {
+        toggleMobileSidebar();
+      }
+      // Actualizar breadcrumb
+      const names = {
+        'dashboard': 'Dashboard Gerencial',
+        'medicamentos': 'Catálogo & Precios (CRUD)',
+        'lotes': 'Ingreso de Lotes (FEFO)',
+        'movimientos': 'Kardex & Ventas DTE',
+        'usuarios': 'Personal & Roles (RBAC)',
+        'auditoria': 'Auditoría & Monitoreo en Vivo',
+        'turnos': 'Horarios & Calendarios (Google / Apple)'
+      };
+      const b = document.getElementById('active-breadcrumb');
+      if (b && names[sec]) b.textContent = names[sec];
+
+      if (typeof origCambiarSec === 'function') {
+        origCambiarSec(sec);
+      }
+    };
+  </script>
 </body>
 </html>

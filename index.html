@@ -70,6 +70,9 @@
         </div>
 
         <!-- Botón Rápido Recuperar Acceso -->
+        <button onclick="switchTab('turnos_pos')" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-xs shadow-sm cursor-pointer transition-all">
+          📅 <span>Horarios & Calendarios</span>
+        </button>
         <button onclick="abrirModalRecuperarCuentaPOS()" class="hidden sm:inline-flex items-center gap-1 px-2.5 py-1.5 bg-white hover:bg-indigo-50 text-slate-700 hover:text-indigo-800 border border-slate-300 rounded-lg font-bold text-xs shadow-2xs cursor-pointer">
           🔑 Recuperar Clave
         </button>
@@ -132,6 +135,20 @@
       
       <!-- Columna Izquierda: Búsqueda, Paciente y Catálogo de Productos (8 cols) -->
       <div class="lg:col-span-8 space-y-4">
+        <div onclick="switchTab('turnos_pos')" class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-3 px-4 rounded-2xl border border-indigo-500/40 shadow-xs flex items-center justify-between gap-3 cursor-pointer hover:border-indigo-400 transition-all mb-3">
+          <div class="flex items-center gap-2.5">
+            <span class="text-lg">📅</span>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="font-black text-xs text-white">Horarios de Trabajadores (Google / Apple Calendar)</span>
+                <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[9px] px-1.5 py-0.2 rounded-full font-bold">ACTIVO</span>
+              </div>
+              <p class="text-[11px] text-slate-300">Vicente Flores (08:30 a 16:30) • Sebastián Torres (09:00 a 18:00) • Clic para ver calendario y sincronizar.</p>
+            </div>
+          </div>
+          <button class="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-bold rounded-xl whitespace-nowrap shadow-xs">Ver Turnos ›</button>
+        </div>
+        
         
         <!-- Tarjeta Ergonómica de Paciente & Convenio de Salud -->
         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">

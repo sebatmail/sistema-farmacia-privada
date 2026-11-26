@@ -273,18 +273,25 @@ function sincronizarControladosPOS() {
 document.addEventListener('DOMContentLoaded', async () => {
   cargarEstadoPersistentePOS();
 
-  // Inicializar Sesión y RBAC
+  // Inicializar Sesión y RBAC: Requerir autenticación explícita
+  const isAuthenticated = sessionStorage.getItem('farmared_authenticated') === 'true';
   const sesionGuardada = sessionStorage.getItem('farmared_current_user');
-  if (sesionGuardada) {
+  const overlay = document.getElementById('saas-login-overlay');
+
+  if (isAuthenticated && sesionGuardada) {
     try {
       aplicarRBAC(JSON.parse(sesionGuardada));
+      if (overlay) overlay.classList.add('hidden');
     } catch (e) {
-      aplicarRBAC(ROLES_RBAC.vicente);
+      cerrarSesionSaaS();
     }
   } else {
-    // Si no hay sesión previa, mostrar la pantalla de login estilo PetCare
-    const overlay = document.getElementById('saas-login-overlay');
-    if (overlay) overlay.classList.remove('hidden');
+    // Si no está autenticado, SIEMPRE mostrar la pantalla de login estilo PetCare
+    if (overlay) {
+      overlay.classList.remove('hidden');
+    }
+    // Cargar datos base de demostración en segundo plano
+    USUARIO_SESION = ROLES_RBAC.vicente;
   }
   window.addEventListener('storage', (e) => {
     if (e.key === STORAGE_KEYS_POS.PRODUCTOS) {
@@ -636,6 +643,7 @@ function switchTab(tabId, forzar = false) {
 function aplicarRBAC(usuario) {
   USUARIO_SESION = usuario;
   sessionStorage.setItem('farmared_current_user', JSON.stringify(usuario));
+  sessionStorage.setItem('farmared_authenticated', 'true');
 
   // 1. Actualizar Datos en Cabecera
   const elName = document.getElementById('current-user-name');
@@ -774,6 +782,7 @@ async function ejecutarLoginSaaS() {
 
 function cerrarSesionSaaS() {
   sessionStorage.removeItem('farmared_current_user');
+  sessionStorage.removeItem('farmared_authenticated');
   USUARIO_SESION = null;
 
   const overlay = document.getElementById('saas-login-overlay');
@@ -1853,4 +1862,9 @@ function restablecerPasswordConCodigoPOS() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ action: 'reset', email: email, codigo: pin, nueva_password: nuevaPass })
   }).catch(() => {});
+}
+
+function abrirModalLoginSaaS() {
+  const overlay = document.getElementById('saas-login-overlay');
+  if (overlay) overlay.classList.remove('hidden');
 }

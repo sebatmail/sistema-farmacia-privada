@@ -203,6 +203,20 @@ function sincronizarStorageTurnos() {
 
 // INICIALIZACIÓN AL CARGAR LA PÁGINA
 document.addEventListener('DOMContentLoaded', async () => {
+  const userSessionStr = sessionStorage.getItem('farmared_current_user');
+  if (userSessionStr) {
+    try {
+      const u = JSON.parse(userSessionStr);
+      if (u.rol === 'ADMIN' || u.rol === 'EVALUADOR' || u.rol === 'QUIMICO_FARMACEUTICO') {
+        sessionStorage.setItem('admin_authenticated', 'true');
+      } else {
+        alert('🔒 ACCESO DENEGADO POR POLÍTICA RBAC:\nEl perfil ' + u.rol + ' (' + u.nombre + ') no tiene privilegios para acceder a la Consola Administrativa Ejecutiva.');
+        window.location.href = '../index.html';
+        return;
+      }
+    } catch (e) {}
+  }
+
   if (sessionStorage.getItem('admin_authenticated') === 'true') {
     desbloquearConsola();
   }
